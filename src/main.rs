@@ -1,44 +1,45 @@
 extern crate crossterm;
 
-const UPDATES_PER_SECONDS: u64 = 60;
-const UPDATE_SPEED: Duration = Duration::from_millis(1000 / UPDATES_PER_SECONDS);
+const TICKS_PER_SECOND: u64 = 1;
+const TICKS_TO_SKIP: u64 = 1000 / TICKS_PER_SECOND;
+const MAX_FRAMESKIP: i64 = 10; // Max number of frames before rendering. Game rendering to drop to this speed before updating slows.
 
 use crossterm::{cursor, terminal, ExecutableCommand, QueueableCommand, style::Print};
 use std::io::stdout;
 use std::thread::sleep;
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 fn main() {
     start();
 }
 
 fn run() {
-    let mut next_time = Instant::now();
+    let start_time = Instant::now();
+    let mut tick_count: u128 = start_time.elapsed().as_millis();
+    let mut loops: i64;
+
+    let mut update_count = 0;
+    let mut render_count = 0;
+
     let running = true;
-    let mut i = 0;
     while running {
-        let current_time = Instant::now();
-        if current_time >= next_time {
-            next_time += UPDATE_SPEED;
-            // Handle input
+        loops = 0;
 
+        while start_time.elapsed().as_millis() > tick_count && loops < MAX_FRAMESKIP {
             // Update
-            i += 1;
-            println!("hello world! tick #{}", i);
+            update_count += 1;
 
-            // Render if we've updated
-            if current_time < next_time {
-                println!("hello world!");
-            }
-        } else {
-            let sleep_time = next_time.duration_since(current_time);
-            if sleep_time > Duration::new(0, 0) {
-                sleep(sleep_time);
-            }
+            tick_count += TICKS_TO_SKIP as u128;
+            loops += 1;
         }
+        // Render
+        render_count += 1;
+        stdout().queue(cursor::MoveTo(0, 0)).unwrap()
+                .queue(Print(format!("Updates: {}", update_count))).unwrap();
+        stdout().queue(cursor::MoveTo(0, 1)).unwrap()
+                .queue(Print(format!("Renders: {}", render_count))).unwrap();
     }
-
-    stop();
+    stop(); // Stop after loop breaks
 }
 
 fn start() {
