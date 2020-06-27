@@ -1,7 +1,7 @@
 extern crate crossterm;
 
-const UPDATES_PER_SECONDS: u128 = 10;
-const UPDATE_SPEED: u128 = 1000 / UPDATES_PER_SECONDS;
+const UPDATES_PER_SECONDS: u64 = 10;
+const UPDATE_SPEED: u64 = 1000 / UPDATES_PER_SECONDS;
 
 use crossterm::{cursor, terminal, ExecutableCommand, QueueableCommand, style::Print};
 use std::io::stdout;
@@ -14,14 +14,14 @@ fn main() {
 
 fn run() {
     let start_time = Instant::now();
-    let mut next_time: u128 = start_time.elapsed().as_millis();
+    let mut next_time: u64 = start_time.elapsed().as_millis() as u64;
 
     let mut update_count = 0;
     let mut render_count = 0;
 
     let running = true;
     while running {
-        let current_time: u128 = start_time.elapsed().as_millis();
+        let current_time: u64 = start_time.elapsed().as_millis() as u64;
         if current_time >= next_time {
             next_time += UPDATE_SPEED;
             // Handle input
@@ -38,7 +38,7 @@ fn run() {
                         .execute(Print(format!("Renders: {}", render_count))).unwrap();
             }
         } else {
-            sleep(Duration::from_millis((next_time - current_time) as u64));
+            sleep(Duration::from_millis(next_time - current_time));
         }
     }
     stop();
