@@ -2,46 +2,34 @@ extern crate crossterm;
 
 use crossterm::{cursor, style::Print, terminal, ExecutableCommand, QueueableCommand};
 use std::io::{Stdout, Write, stdout};
+use std::thread::sleep;
 
-mod GameLoop;
+use std::time::{Duration, Instant};
 
-const MS_PER_UPDATE: f64 = 1000.0 / 60.0;
+const TPS: u64 = 10;
+const TICK_TIME: Duration = Duration::from_millis(1000 / TPS);
 
 fn main() {
     let mut stdout = stdout();
     setup_terminal(&mut stdout);
 
-    let mut timestep = GameLoop::TimeStep::new();
-    let mut lag = 0.0;
+    let mut last_time = Instant::now();
 
-    let running = true;
+    loop {
+        let current_time = Instant::now();
+        let delta_time = current_time.duration_since(last_time);
 
-    'gameloop: loop {
-        if !running {
-            break 'gameloop;
-        }
+        last_time = current_time;
+
         // Handle input
-
-        let delta = timestep.delta();
-        lag += delta;
-
-        while lag >= MS_PER_UPDATE {
-            // Update
-            lag -= MS_PER_UPDATE;
-        }
-
+        // Update
         // Render
-        stdout.queue(cursor::MoveTo(0, 0))
-              .unwrap()
-              .queue(terminal::Clear(terminal::ClearType::CurrentLine))
-              .unwrap()
-              .queue(Print(format!("Lag: {:?} Delta: {:?} FPS: {:?}", lag, delta, timestep.frame_rate().unwrap_or(0))))
-              .unwrap();
 
-        stdout.flush().unwrap();
+        if delta_time < TICK_TIME {
+            sleep(TICK_TIME - delta_time);
+        }
     }
 
-    restore_terminal(&mut stdout);
 }
 
 fn setup_terminal(stdout: &mut Stdout) {
