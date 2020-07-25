@@ -1,10 +1,9 @@
 extern crate crossterm;
 
-use crossterm::{cursor, style::Print, terminal, ExecutableCommand, QueueableCommand};
-use std::io::{stdout, Stdout, Write};
 use std::thread::sleep;
-
+use std::io::{stdout, Write};
 use std::time::{Duration, Instant};
+use crossterm::{cursor, style::Print, terminal, QueueableCommand};
 
 mod input;
 
@@ -29,7 +28,7 @@ fn main() {
     let mut render_count = 0;
     let mut sleep_time = Duration::from_millis(0);
 
-    'gameloop: loop {
+    'running: loop {
         let current_time = Instant::now();
         let delta_time = current_time.duration_since(last_time);
 
@@ -38,12 +37,13 @@ fn main() {
         // Handle input
         while let Ok(char) = input_receiver.try_recv() {
             match char {
-                'q' => break 'gameloop,
+                'q' => break 'running,
                 _ => ()
             }
         }
         // Update
         update_count += 1;
+
         // Render
         stdout.queue(cursor::MoveTo(0, 0)).unwrap()
               .queue(terminal::Clear(terminal::ClearType::CurrentLine)).unwrap()
