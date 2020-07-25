@@ -6,6 +6,8 @@ use std::thread::sleep;
 
 use std::time::{Duration, Instant};
 
+mod input;
+
 const TPS: u64 = 20;
 const TICK_TIME: Duration = Duration::from_millis(1000 / TPS);
 
@@ -19,19 +21,27 @@ fn main() {
     terminal::enable_raw_mode().unwrap();
     stdout.flush().unwrap();
 
+    let input_receiver = input::get_input();
+
     let mut last_time = Instant::now();
 
     let mut update_count = 0;
     let mut render_count = 0;
     let mut sleep_time = Duration::from_millis(0);
 
-    loop {
+    'gameloop: loop {
         let current_time = Instant::now();
         let delta_time = current_time.duration_since(last_time);
 
         last_time = current_time;
 
         // Handle input
+        while let Ok(char) = input_receiver.try_recv() {
+            match char {
+                'q' => break 'gameloop,
+                _ => ()
+            }
+        }
         // Update
         update_count += 1;
         // Render
