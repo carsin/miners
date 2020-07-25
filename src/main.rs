@@ -11,7 +11,13 @@ const TICK_TIME: Duration = Duration::from_millis(1000 / TPS);
 
 fn main() {
     let mut stdout = stdout();
-    setup_terminal(&mut stdout);
+
+    // Set up terminal
+    stdout.queue(terminal::EnterAlternateScreen).unwrap();
+    stdout.queue(cursor::Hide).unwrap();
+    stdout.queue(terminal::Clear(terminal::ClearType::All)).unwrap();
+    terminal::enable_raw_mode().unwrap();
+    stdout.flush().unwrap();
 
     let mut last_time = Instant::now();
 
@@ -29,10 +35,9 @@ fn main() {
         // Update
         update_count += 1;
         // Render
-        stdout
-            .queue(cursor::MoveTo(0, 0)).unwrap()
-            .queue(terminal::Clear(terminal::ClearType::CurrentLine)).unwrap()
-            .queue(Print(format!("Updates: {:?} Renders: {:?} Delta Time: {:?} Last Sleep Time: {:?}",update_count, render_count, delta_time, sleep_time))).unwrap();
+        stdout.queue(cursor::MoveTo(0, 0)).unwrap()
+              .queue(terminal::Clear(terminal::ClearType::CurrentLine)).unwrap()
+              .queue(Print(format!("Updates: {:?} Renders: {:?} Delta Time: {:?} Last Sleep Time: {:?}",update_count, render_count, delta_time, sleep_time))).unwrap();
         stdout.flush().unwrap();
 
         render_count += 1;
@@ -43,23 +48,10 @@ fn main() {
         }
     }
 
-    restore_terminal(&mut stdout);
-}
-
-fn setup_terminal(stdout: &mut Stdout) {
-    // Set up terminal
-    stdout.execute(terminal::EnterAlternateScreen).unwrap();
-    terminal::enable_raw_mode().unwrap();
-    stdout.execute(cursor::Hide).unwrap();
-    stdout
-        .execute(terminal::Clear(terminal::ClearType::All))
-        .unwrap();
-}
-
-fn restore_terminal(stdout: &mut Stdout) {
     // Restore terminal after game is finished
-    stdout.execute(cursor::Show).unwrap();
     terminal::disable_raw_mode().unwrap();
-    stdout.execute(terminal::LeaveAlternateScreen).unwrap();
+    stdout.queue(cursor::Show).unwrap();
+    stdout.queue(terminal::LeaveAlternateScreen).unwrap();
+    stdout.flush().unwrap();
     println!("Game exited successfully");
 }
