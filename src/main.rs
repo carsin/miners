@@ -1,9 +1,9 @@
 extern crate crossterm;
 
-use std::thread::sleep;
-use std::io::{stdout, Write};
-use std::time::{Duration, Instant};
 use crossterm::{cursor, style::Print, terminal, QueueableCommand};
+use std::io::{stdout, Write};
+use std::thread::sleep;
+use std::time::{Duration, Instant};
 
 mod input;
 
@@ -16,7 +16,9 @@ fn main() {
     // Set up terminal
     stdout.queue(terminal::EnterAlternateScreen).unwrap();
     stdout.queue(cursor::Hide).unwrap();
-    stdout.queue(terminal::Clear(terminal::ClearType::All)).unwrap();
+    stdout
+        .queue(terminal::Clear(terminal::ClearType::All))
+        .unwrap();
     terminal::enable_raw_mode().unwrap();
     stdout.flush().unwrap();
 
@@ -38,16 +40,23 @@ fn main() {
         while let Ok(char) = input_receiver.try_recv() {
             match char {
                 'q' => break 'running,
-                _ => ()
+                _ => (),
             }
         }
         // Update
         update_count += 1;
 
         // Render
-        stdout.queue(cursor::MoveTo(0, 0)).unwrap()
-              .queue(terminal::Clear(terminal::ClearType::CurrentLine)).unwrap()
-              .queue(Print(format!("Updates: {:?} Renders: {:?} Delta Time: {:?} Last Sleep Time: {:?}",update_count, render_count, delta_time, sleep_time))).unwrap();
+        stdout
+            .queue(cursor::MoveTo(0, 0))
+            .unwrap()
+            .queue(terminal::Clear(terminal::ClearType::CurrentLine))
+            .unwrap()
+            .queue(Print(format!(
+                "Updates: {:?} Renders: {:?} Delta Time: {:?} Last Sleep Time: {:?}",
+                update_count, render_count, delta_time, sleep_time
+            )))
+            .unwrap();
         stdout.flush().unwrap();
 
         render_count += 1;
