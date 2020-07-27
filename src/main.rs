@@ -16,9 +16,7 @@ fn main() {
     // Set up terminal
     stdout.queue(terminal::EnterAlternateScreen).unwrap();
     stdout.queue(cursor::Hide).unwrap();
-    stdout
-        .queue(terminal::Clear(terminal::ClearType::All))
-        .unwrap();
+    stdout.queue(terminal::Clear(terminal::ClearType::All)).unwrap();
     terminal::enable_raw_mode().unwrap();
     stdout.flush().unwrap();
 
@@ -47,16 +45,10 @@ fn main() {
         update_count += 1;
 
         // Render
-        stdout
-            .queue(cursor::MoveTo(0, 0))
-            .unwrap()
-            .queue(terminal::Clear(terminal::ClearType::CurrentLine))
-            .unwrap()
-            .queue(Print(format!(
-                "Updates: {:?} Renders: {:?} Delta Time: {:?} Last Sleep Time: {:?}",
-                update_count, render_count, delta_time, sleep_time
-            )))
-            .unwrap();
+        stdout.queue(cursor::MoveTo(0, 0)).unwrap()
+              .queue(terminal::Clear(terminal::ClearType::CurrentLine)).unwrap()
+              .queue(Print(format!("Updates: {:?} Renders: {:?} Delta Time: {:?} Last Sleep Time: {:?}", update_count, render_count, delta_time, sleep_time))).unwrap();
+
         stdout.flush().unwrap();
 
         render_count += 1;
