@@ -5,7 +5,3 @@ authors = ["carsin <carsin@users.noreply.github.com>"]
 edition = "2018"
 
 [dependencies]
-bracket-terminal = "0.8.1"
-# bracket-pathfinding = "0.8.1"
-# bracket-noise = "0.8.1"
-# bracket-random = "0.8.0"
