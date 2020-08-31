@@ -1,5 +1,3 @@
-#![forbid(unsafe_code)]
-
 extern crate pixels;
 extern crate winit;
 extern crate winit_input_helper;
@@ -15,7 +13,6 @@ const WIDTH: u32 = 320;
 const HEIGHT: u32 = 240;
 const BOX_SIZE: i16 = 64;
 
-/// Representation of the application state. In this example, a box will bounce around the screen.
 struct World {
     box_x: i16,
     box_y: i16,
@@ -28,12 +25,7 @@ fn main() -> Result<(), Error> {
     let mut input = WinitInputHelper::new();
     let window = {
         let size = LogicalSize::new(WIDTH as f64, HEIGHT as f64);
-        WindowBuilder::new()
-            .with_title("Hello Pixels")
-            .with_inner_size(size)
-            .with_min_inner_size(size)
-            .build(&event_loop)
-            .unwrap()
+        WindowBuilder::new().with_title("Hello Pixels").with_inner_size(size).with_min_inner_size(size).build(&event_loop).unwrap()
     };
 
     let mut pixels = {
@@ -41,17 +33,14 @@ fn main() -> Result<(), Error> {
         let surface_texture = SurfaceTexture::new(window_size.width, window_size.height, &window);
         Pixels::new(WIDTH, HEIGHT, surface_texture)?
     };
+
     let mut world = World::new();
 
     event_loop.run(move |event, _, control_flow| {
         // Draw the current frame
         if let Event::RedrawRequested(_) = event {
             world.draw(pixels.get_frame());
-            if pixels
-                .render()
-                .map_err(|e| println!("pixels.render() failed: {}", e))
-                .is_err()
-            {
+            if pixels.render().map_err(|e| println!("pixels.render() failed: {}", e)).is_err() {
                 *control_flow = ControlFlow::Exit;
                 return;
             }
@@ -93,6 +82,7 @@ impl World {
         if self.box_x <= 0 || self.box_x + BOX_SIZE > WIDTH as i16 {
             self.velocity_x *= -1;
         }
+
         if self.box_y <= 0 || self.box_y + BOX_SIZE > HEIGHT as i16 {
             self.velocity_y *= -1;
         }
