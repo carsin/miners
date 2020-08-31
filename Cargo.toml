@@ -6,3 +6,5 @@ edition = "2018"
 
 [dependencies]
 winit = "0.22.2"
+winit_input_helper = "0.6.0"
+pixels = "0.2"
