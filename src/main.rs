@@ -4,11 +4,10 @@ extern crate specs;
 use bracket_terminal::prelude::*;
 use specs::prelude::*;
 
-bracket_terminal::add_wasm_support!();
-
+use components::{Position, Renderable};
 mod components;
 
-use components::{Position, Renderable};
+bracket_terminal::add_wasm_support!();
 
 struct State {
     data: World
@@ -16,7 +15,14 @@ struct State {
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
-        ctx.print(0, 0, "Hello Bracket World");
+
+        // Render
+        let positions = self.data.read_storage::<Position>();
+        let renderables = self.data.read_storage::<Renderable>();
+
+        for (position, entity) in (&positions, &renderables).join() {
+            ctx.print_color(position.x, position.y, entity.fg, entity.bg, entity.glyph);
+        }
     }
 }
 
