@@ -4,22 +4,35 @@ extern crate specs;
 use bracket_terminal::prelude::*;
 use specs::prelude::*;
 
-use components::{Position, Renderable, Moving};
+use components::{Position, Renderable, Moving, Player, Direction, move_player};
 mod components;
 
 bracket_terminal::add_wasm_support!();
 
 struct Game {
-    data: World
+    world: World
 }
 
 impl Game {
     fn run_systems(&mut self) {
         let mut moving = Moving{};
-        moving.run_now(&self.data);
+        moving.run_now(&self.world);
 
         // Apply changes to World
-        self.data.maintain();
+        self.world.maintain();
+    }
+
+    fn handle_input(&mut self, ctx: &mut BTerm) {
+        match ctx.key {
+            None => {}
+            Some(key) => match key {
+                VirtualKeyCode::W => move_player(Direction::North, &mut self.world),
+                VirtualKeyCode::S => move_player(Direction::South, &mut self.world),
+                VirtualKeyCode::A => move_player(Direction::East, &mut self.world),
+                VirtualKeyCode::D => move_player(Direction::West, &mut self.world),
+                _ => {}
+            }
+        }
     }
 }
 
@@ -28,12 +41,14 @@ impl GameState for Game {
         // Reset console for next render
         ctx.cls();
 
+        self.handle_input(ctx);
+
         // Update
         self.run_systems();
 
         // Render
-        let positions = self.data.read_storage::<Position>();
-        let renderables = self.data.read_storage::<Renderable>();
+        let positions = self.world.read_storage::<Position>();
+        let renderables = self.world.read_storage::<Renderable>();
 
         for (position, entity) in (&positions, &renderables).join() {
             ctx.print_color(position.x, position.y, entity.fg, entity.bg, entity.glyph);
@@ -46,27 +61,29 @@ fn main() -> BError {
         .with_title("Hello Minimal Bracket World")
         .build()?;
 
-    let mut gamestate: Game = Game {
-        data: World::new(),
+    let mut game: Game = Game {
+        world: World::new(),
     };
 
-    gamestate.data.register::<Position>();
-    gamestate.data.register::<Renderable>();
-    gamestate.data.register::<Moving>();
+    game.world.register::<Position>();
+    game.world.register::<Renderable>();
+    game.world.register::<Player>();
+    game.world.register::<Moving>();
 
     // Create player
-    gamestate.data.create_entity()
-        .with(Position { x: 0, y: 0 })
+    game.world.create_entity()
+        .with(Position { x: 8, y: 8 })
         .with(Renderable {
             glyph: '@',
             fg: RGB::named(WHITE),
             bg: RGB::named(BLACK),
         })
+        .with(Player{})
         .build();
 
     // Testing NPC's
     for i in 0..10 {
-    gamestate.data.create_entity()
+    game.world.create_entity()
         .with(Position { x: i , y: 1 })
         .with(Renderable {
             glyph: '☺',
@@ -78,5 +95,5 @@ fn main() -> BError {
 }
 
     // Call into bracket_terminal to run the main loop. This handles rendering, and calls back into State's tick function every cycle. The box is needed to work around lifetime handling.
-    main_loop(context, gamestate)
+    main_loop(context, game)
 }
