@@ -19,10 +19,10 @@ fn main() {
         .build()
         .expect("Could not create ggez context!");
 
-    let mut my_game = game::Game::new(&mut ctx);
+    let mut game = game::GameState::new();
 
     // Run!
-    match event::run(&mut ctx, &mut event_loop, &mut my_game) {
+    match event::run(&mut ctx, &mut event_loop, &mut game) {
         Ok(_) => println!("Exited cleanly."),
         Err(e) => println!("Error occured: {}", e),
     }

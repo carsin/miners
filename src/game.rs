@@ -1,20 +1,20 @@
 use ggez::{event, graphics, Context, GameResult};
 
-use super::world;
+use super::world::GameWorld;
 
-pub struct Game {
-    world: world::GameWorld,
+pub struct GameState {
+    world: GameWorld,
 }
 
-impl Game {
-    pub fn new(_ctx: &mut Context) -> Game {
-        Game {
-            world: world::GameWorld::new(),
+impl GameState {
+    pub fn new() -> Self {
+        Self {
+            world: GameWorld::new(),
         }
     }
 }
 
-impl event::EventHandler for Game {
+impl event::EventHandler for GameState {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         {}
         Ok(())

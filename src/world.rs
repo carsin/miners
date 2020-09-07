@@ -1,8 +1,8 @@
 use specs::{
-    join::Join, Builder, Component, ReadStorage, RunNow, System, VecStorage, World, WorldExt,
+    Builder, World, WorldExt,
 };
 
-use super::components;
+use super::components::{Renderable, Position, Wall, Player};
 
 pub struct GameWorld {
     world: World,
@@ -10,15 +10,24 @@ pub struct GameWorld {
 
 impl GameWorld {
     pub fn new() -> Self {
-        GameWorld {
+        Self {
             world: World::new()
         }
     }
 
     pub fn register_components(&mut self) {
-        self.world.register::<components::Position>();
-        self.world.register::<components::Renderable>();
-        self.world.register::<components::Wall>();
-        self.world.register::<components::Player>();
+        self.world.register::<Position>();
+        self.world.register::<Renderable>();
+        self.world.register::<Wall>();
+        self.world.register::<Player>();
+    }
+
+    pub fn create_player(&mut self, position: Position) {
+        self.world.create_entity()
+            .with(Position { z: 1, ..position })
+            .with(Renderable {
+                path: String::from("player.png")
+            })
+            .build();
     }
 }
