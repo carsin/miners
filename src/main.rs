@@ -2,12 +2,11 @@ extern crate ggez;
 extern crate specs;
 
 use ggez::{conf, event, ContextBuilder};
-use specs::{
-    join::Join, Builder, Component, ReadStorage, RunNow, System, VecStorage, World, WorldExt,
-};
 use std::path;
 
 mod game;
+mod world;
+mod components;
 
 fn main() {
     // Make a Context.
