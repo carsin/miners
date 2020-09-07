@@ -1,14 +1,17 @@
 extern crate bracket_terminal;
+extern crate specs;
 
 use bracket_terminal::prelude::*;
 
 bracket_terminal::add_wasm_support!();
 
+mod components;
+
 struct State {}
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
-        ctx.print(1, 1, "Hello Bracket World");
+        ctx.print(0, 0, "Hello Bracket World");
     }
 }
 
