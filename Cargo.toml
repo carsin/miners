@@ -5,4 +5,4 @@ authors = ["carsin <carsin@users.noreply.github.com>"]
 edition = "2018"
 
 [dependencies]
-crossterm = "*"
+ggez = "0.5.1"

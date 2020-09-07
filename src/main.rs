@@ -1,76 +1,44 @@
-extern crate crossterm;
+use ggez::event::{self, EventHandler};
+use ggez::{conf, graphics, Context, ContextBuilder, GameResult};
+use std::path;
 
-use crossterm::{cursor, style::Print, terminal, QueueableCommand};
-use std::io::{stdout, Write};
-use std::thread::sleep;
-use std::time::{Duration, Instant};
+struct Game {}
 
-mod input;
+impl Game {
+    pub fn new(_ctx: &mut Context) -> Game {
+        Game {}
+    }
+}
 
-const TPS: u64 = 20;
-const TICK_TIME: Duration = Duration::from_millis(1000 / TPS);
-
-fn main() {
-    let mut stdout = stdout();
-
-    // Set up terminal
-    stdout.queue(terminal::EnterAlternateScreen).unwrap();
-    stdout.queue(cursor::Hide).unwrap();
-    stdout
-        .queue(terminal::Clear(terminal::ClearType::All))
-        .unwrap();
-    terminal::enable_raw_mode().unwrap();
-    stdout.flush().unwrap();
-
-    let input_receiver = input::get_input();
-
-    let mut last_time = Instant::now();
-
-    let mut update_count = 0;
-    let mut render_count = 0;
-    let mut sleep_time = Duration::from_millis(0);
-
-    'running: loop {
-        let current_time = Instant::now();
-        let delta_time = current_time.duration_since(last_time);
-
-        last_time = current_time;
-
-        // Handle input
-        while let Ok(char) = input_receiver.try_recv() {
-            match char {
-                'q' => break 'running,
-                _ => (),
-            }
-        }
-        // Update
-        update_count += 1;
-
-        // Render
-        stdout
-            .queue(cursor::MoveTo(0, 0))
-            .unwrap()
-            .queue(terminal::Clear(terminal::ClearType::CurrentLine))
-            .unwrap()
-            .queue(Print(format!(
-                "Updates: {:?} Renders: {:?} Delta Time: {:?} Last Sleep Time: {:?}",
-                update_count, render_count, delta_time, sleep_time
-            )))
-            .unwrap();
-        stdout.flush().unwrap();
-
-        render_count += 1;
-
-        if delta_time < TICK_TIME {
-            sleep_time = TICK_TIME - delta_time;
-            sleep(sleep_time);
-        }
+impl EventHandler for Game {
+    fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
+        // Update code here...
+        Ok(())
     }
 
-    // Restore terminal after game is finished
-    terminal::disable_raw_mode().unwrap();
-    stdout.queue(cursor::Show).unwrap();
-    stdout.queue(terminal::LeaveAlternateScreen).unwrap();
-    stdout.flush().unwrap();
-    println!("Game exited successfully");
+    fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+        graphics::clear(ctx, graphics::WHITE);
+        // Draw code here...
+        graphics::present(ctx)
+    }
+}
+
+fn main() {
+    // Make a Context.
+    let context_builder = ContextBuilder::new("miners", "miners")
+        .window_setup(conf::WindowSetup::default().title("miners"))
+        .window_mode(conf::WindowMode::default().dimensions(800.0, 600.0))
+        .add_resource_path(path::PathBuf::from("./resources"));
+
+    let (mut ctx, mut event_loop) = context_builder
+        .build()
+        .expect("Could not create ggez context!");
+
+    let mut my_game = Game::new(&mut ctx);
+
+    // Run!
+    match event::run(&mut ctx, &mut event_loop, &mut my_game) {
+        Ok(_) => println!("Exited cleanly."),
+        Err(e) => println!("Error occured: {}", e),
+    }
 }
