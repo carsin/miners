@@ -3,6 +3,7 @@ extern crate specs;
 
 use ggez::{conf, event, ContextBuilder};
 use std::path;
+use components::Position;
 
 mod game;
 mod world;
@@ -20,6 +21,9 @@ fn main() {
         .expect("Could not create ggez context!");
 
     let mut game = game::GameState::new();
+    // Set up world
+    game.world.register_components();
+    game.world.create_player(Position { x: 0, y: 0, z: 0 });
 
     // Run!
     match event::run(&mut ctx, &mut event_loop, &mut game) {
