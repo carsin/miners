@@ -30,4 +30,13 @@ impl GameWorld {
             })
             .build();
     }
+
+    pub fn create_wall(&mut self, position: Position) {
+        self.data.create_entity()
+            .with(Position { z: 1, ..position })
+            .with(Renderable {
+                path: String::from("/wall.png/")
+            })
+            .build();
+    }
 }
