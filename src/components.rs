@@ -3,15 +3,15 @@ use specs::{Component, VecStorage};
 
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
-struct Position {
-    x: u32,
-    y: u32,
+pub struct Position {
+    pub x: u32,
+    pub y: u32,
 }
 
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
-struct Renderable {
-    glyph: char,
-    fg: RGB,
-    bg: RGB,
+pub struct Renderable {
+    pub glyph: char,
+    pub fg: RGB,
+    pub bg: RGB,
 }
