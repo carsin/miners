@@ -34,6 +34,7 @@ impl Game {
             }
         }
     }
+
 }
 
 impl GameState for Game {
@@ -46,12 +47,41 @@ impl GameState for Game {
         // Update
         self.run_systems();
 
-        // Render
+        // Render map
+        let map = self.world.fetch::<Vec<components::Tile>>();
+        render_map(ctx, &map);
+
+        // Render entities
         let positions = self.world.read_storage::<Position>();
         let renderables = self.world.read_storage::<Renderable>();
 
         for (position, entity) in (&positions, &renderables).join() {
             ctx.print_color(position.x, position.y, entity.fg, entity.bg, entity.glyph);
+        }
+    }
+}
+
+// TODO: Organize map implementation
+fn render_map(ctx: &mut BTerm, map: &[components::Tile]) {
+    let mut y = 0;
+    let mut x = 0;
+    for tile in map.iter() {
+        // Render a tile depending upon the tile type
+        match tile {
+            components::Tile::Empty => {
+                ctx.print_color(x, y, RGB::from_f32(0.5, 0.5, 0.5), RGB::from_f32(0., 0., 0.), '.');
+            }
+
+            components::Tile::Wall => {
+                ctx.print_color(x, y, RGB::from_f32(0.0, 1.0, 0.0), RGB::from_f32(0., 0., 0.), '#');
+            }
+        }
+
+        // Move the coordinates
+        x += 1;
+        if x > 79 {
+            x = 0;
+            y += 1;
         }
     }
 }
@@ -69,6 +99,8 @@ fn main() -> BError {
     game.world.register::<Renderable>();
     game.world.register::<Player>();
     game.world.register::<Moving>();
+
+    game.world.insert(components::generate_tile_map(80, 50));
 
     // Create player
     game.world.create_entity()
