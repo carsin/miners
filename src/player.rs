@@ -1,5 +1,5 @@
 use specs::{WorldExt, World, prelude::*};
-use super::{Direction, Player, Position, TileType, map};
+use super::{Direction, Player, Position, TileType, map, util};
 use std::cmp::{min, max};
 use map::xy_idx;
 
@@ -18,10 +18,8 @@ pub fn move_player(dir: Direction, world: &mut World) {
     for (_player, pos) in (&mut player, &mut positions).join() {
         let destination_idx = xy_idx((pos.x + delta_x) as usize, (pos.y + delta_y) as usize);
         if map[destination_idx] != TileType::Wall {
-        // TODO: Implement bounding function in utils.rs
-            pos.x = max(0, min(79, pos.x + delta_x));
-            pos.y = max(0, min(49, pos.y + delta_y));
+            pos.x = util::clamp((pos.x + delta_x) as usize, 0, 79) as i32;
+            pos.y = util::clamp((pos.y + delta_y) as usize, 0, 49) as i32;
         }
-
     }
 }

@@ -1,9 +1,7 @@
-extern crate bracket_terminal;
-extern crate specs;
-
 use bracket_terminal::prelude::*;
 use specs::prelude::*;
 
+// TODO: Selective importing
 use components::*;
 use player::*;
 use map::*;
@@ -11,6 +9,7 @@ use map::*;
 mod components;
 mod player;
 mod map;
+mod util;
 
 struct Game {
     world: World
@@ -93,8 +92,9 @@ fn render_map(ctx: &mut BTerm, map: &[TileType]) {
 }
 
 fn main() -> BError {
+    // TODO: better game sizing
     let context = BTermBuilder::simple80x50()
-        .with_title("Hello Minimal Bracket World")
+        .with_title("miners")
         .build()?;
 
     let mut game: Game = Game {
@@ -119,7 +119,7 @@ fn main() -> BError {
         .with(Player{})
         .build();
 
-    // Testing NPC's
+    // Testing NPCs
     for i in 0..10 {
     game.world.create_entity()
         .with(Position { x: i , y: 1 })
