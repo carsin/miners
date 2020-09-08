@@ -4,10 +4,13 @@ extern crate specs;
 use bracket_terminal::prelude::*;
 use specs::prelude::*;
 
-use components::{Position, Renderable, Moving, Player, Direction, move_player};
-mod components;
+use components::*;
+use player::*;
+use map::*;
 
-bracket_terminal::add_wasm_support!();
+mod components;
+mod player;
+mod map;
 
 struct Game {
     world: World
@@ -34,7 +37,6 @@ impl Game {
             }
         }
     }
-
 }
 
 impl GameState for Game {
@@ -48,7 +50,7 @@ impl GameState for Game {
         self.run_systems();
 
         // Render map
-        let map = self.world.fetch::<Vec<components::Tile>>();
+        let map = self.world.fetch::<Vec<TileType>>();
         render_map(ctx, &map);
 
         // Render entities
@@ -58,21 +60,25 @@ impl GameState for Game {
         for (position, entity) in (&positions, &renderables).join() {
             ctx.print_color(position.x, position.y, entity.fg, entity.bg, entity.glyph);
         }
+
+        // Render FPS
+        ctx.print_centered(0, &format!("{} fps", ctx.fps as u32));
+
     }
 }
 
 // TODO: Organize map implementation
-fn render_map(ctx: &mut BTerm, map: &[components::Tile]) {
+fn render_map(ctx: &mut BTerm, map: &[TileType]) {
     let mut y = 0;
     let mut x = 0;
     for tile in map.iter() {
         // Render a tile depending upon the tile type
         match tile {
-            components::Tile::Empty => {
+            TileType::Empty => {
                 ctx.print_color(x, y, RGB::from_f32(0.5, 0.5, 0.5), RGB::from_f32(0., 0., 0.), '.');
             }
 
-            components::Tile::Wall => {
+            TileType::Wall => {
                 ctx.print_color(x, y, RGB::from_f32(0.0, 1.0, 0.0), RGB::from_f32(0., 0., 0.), '#');
             }
         }
@@ -100,7 +106,7 @@ fn main() -> BError {
     game.world.register::<Player>();
     game.world.register::<Moving>();
 
-    game.world.insert(components::generate_tile_map(80, 50));
+    game.world.insert(generate_tile_map(80, 50));
 
     // Create player
     game.world.create_entity()
