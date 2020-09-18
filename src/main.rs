@@ -1,10 +1,11 @@
 use bracket_terminal::prelude::*;
 use specs::prelude::*;
 
-// TODO: Selective importing
-use components::*;
-use player::*;
-use map::*;
+use map::Direction;
+use components::Moving;
+use components::Player;
+use components::Position;
+use components::Renderable;
 
 mod components;
 mod player;
@@ -17,7 +18,7 @@ struct Game {
 
 impl Game {
     fn run_systems(&mut self) {
-        let mut moving = Moving{};
+        let mut moving = components::Moving{};
         moving.run_now(&self.world);
 
         // Apply changes to World
@@ -28,10 +29,10 @@ impl Game {
         match ctx.key {
             None => {}
             Some(key) => match key {
-                VirtualKeyCode::W => move_player(Direction::North, &mut self.world),
-                VirtualKeyCode::S => move_player(Direction::South, &mut self.world),
-                VirtualKeyCode::A => move_player(Direction::East, &mut self.world),
-                VirtualKeyCode::D => move_player(Direction::West, &mut self.world),
+                VirtualKeyCode::W => player::move_player(Direction::North, &mut self.world),
+                VirtualKeyCode::S => player::move_player(Direction::South, &mut self.world),
+                VirtualKeyCode::A => player::move_player(Direction::East, &mut self.world),
+                VirtualKeyCode::D => player::move_player(Direction::West, &mut self.world),
                 _ => {}
             }
         }
@@ -49,8 +50,8 @@ impl GameState for Game {
         self.run_systems();
 
         // Render map
-        let map = self.world.fetch::<Vec<TileType>>();
-        render_map(ctx, &map);
+        let map = self.world.fetch::<Vec<map::TileType>>();
+        map::render_map(ctx, &map);
 
         // Render entities
         let positions = self.world.read_storage::<Position>();
@@ -63,31 +64,6 @@ impl GameState for Game {
         // Render FPS
         ctx.print_centered(0, &format!("{} fps", ctx.fps as u32));
 
-    }
-}
-
-// TODO: Organize map implementation
-fn render_map(ctx: &mut BTerm, map: &[TileType]) {
-    let mut y = 0;
-    let mut x = 0;
-    for tile in map.iter() {
-        // Render a tile depending upon the tile type
-        match tile {
-            TileType::Empty => {
-                ctx.print_color(x, y, RGB::from_f32(0.5, 0.5, 0.5), RGB::from_f32(0., 0., 0.), '.');
-            }
-
-            TileType::Wall => {
-                ctx.print_color(x, y, RGB::from_f32(0.0, 1.0, 0.0), RGB::from_f32(0., 0., 0.), '#');
-            }
-        }
-
-        // Move the coordinates
-        x += 1;
-        if x > 79 {
-            x = 0;
-            y += 1;
-        }
     }
 }
 
@@ -106,7 +82,7 @@ fn main() -> BError {
     game.world.register::<Player>();
     game.world.register::<Moving>();
 
-    game.world.insert(generate_tile_map(80, 50));
+    game.world.insert(map::generate_tile_map(80, 50));
 
     // Create player
     game.world.create_entity()
