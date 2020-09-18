@@ -1,15 +1,12 @@
 use bracket_terminal::prelude::*;
 use specs::prelude::*;
 
+use components::{Player, Position, Renderable, Moving};
 use map::Direction;
-use components::Moving;
-use components::Player;
-use components::Position;
-use components::Renderable;
 
 mod components;
-mod player;
 mod map;
+mod player;
 mod util;
 
 struct Game {

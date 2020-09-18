@@ -9,13 +9,28 @@ pub enum TileType {
     Empty, Wall
 }
 
-pub fn xy_idx(x: usize, y: usize) -> usize {
-    // TODO: Scale with map size
-    let width = 80;
-    (y as usize * width) + x as usize
+pub struct Rect {
+    pub x1: usize,
+    pub x2: usize,
+    pub y1: usize,
+    pub y2: usize,
 }
 
-pub fn generate_tile_map(width: usize, height: usize) -> Vec<TileType> {
+impl Rect {
+    pub fn new(x: usize, y: usize, w: usize, h: usize,) -> Self {
+        Self {x1: x, y1: y, x2: x + w, y2: y + h }
+    }
+
+    pub fn overlaps_with(&self, other: &Rect) -> bool {
+        self.x1 <= other.x2 && self.x2 >= other.x1 && self.y1 <= other.y2 && self.y2 >= other.y1
+    }
+
+    pub fn center(&self) -> (usize, usize) {
+        ((self.x1 + self.x2) / 2, (self.y1 + self.y2) / 2)
+    }
+}
+
+pub fn generate_map_test(width: usize, height: usize) -> Vec<TileType> {
     let mut map = vec![TileType::Empty; width * height];
 
     // Make map edges walls
@@ -54,4 +69,10 @@ pub fn render_map(ctx: &mut BTerm, map: &[TileType]) {
             y += 1;
         }
     }
+}
+
+pub fn xy_idx(x: usize, y: usize) -> usize {
+    // TODO: Scale with map size
+    let width = 80;
+    (y as usize * width) + x as usize
 }
