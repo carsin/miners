@@ -78,7 +78,7 @@ pub fn render_map(ctx: &mut BTerm, map: &[TileType]) {
             }
 
             TileType::Wall => {
-                ctx.print_color(x, y, RGB::from_f32(0.0, 1.0, 0.0), RGB::from_f32(0., 0., 0.), '#');
+                ctx.print_color(x, y, RGB::from_f32(0.3, 0.3, 0.3), RGB::from_f32(0., 0., 0.), '#');
             }
         }
 

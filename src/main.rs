@@ -15,8 +15,8 @@ struct Game {
 
 impl Game {
     fn run_systems(&mut self) {
-        let mut moving = components::Moving{};
-        moving.run_now(&self.world);
+        // let mut moving = components::Moving{};
+        // moving.run_now(&self.world);
 
         // Apply changes to World
         self.world.maintain();
@@ -59,8 +59,7 @@ impl GameState for Game {
         }
 
         // Render FPS
-        ctx.print_centered(0, &format!("{} fps", ctx.fps as u32));
-
+        // ctx.print_centered(0, &format!("{} fps", ctx.fps as u32));
     }
 }
 
@@ -85,25 +84,25 @@ fn main() -> BError {
     game.world.create_entity()
         .with(Position { x: 8, y: 8 })
         .with(Renderable {
-            glyph: '@',
-            fg: RGB::named(WHITE),
+            glyph: '☺',
+            fg: RGB::named(RED),
             bg: RGB::named(BLACK),
         })
         .with(Player{})
         .build();
 
     // Testing NPCs
-    for i in 0..10 {
-    game.world.create_entity()
-        .with(Position { x: i , y: 1 })
-        .with(Renderable {
-            glyph: '☺',
-            fg: RGB::named(RED),
-            bg: RGB::named(BLACK),
-        })
-        .with(Moving{})
-        .build();
-}
+    // for i in 0..10 {
+    //     game.world.create_entity()
+    //         .with(Position { x: i , y: 1 })
+    //         .with(Renderable {
+    //             glyph: '☺',
+    //             fg: RGB::named(RED),
+    //             bg: RGB::named(BLACK),
+    //         })
+    //         .with(Moving{})
+    //         .build();
+    // }
 
     // Call into bracket_terminal to run the main loop. This handles rendering, and calls back into State's tick function every cycle. The box is needed to work around lifetime handling.
     main_loop(context, game)
