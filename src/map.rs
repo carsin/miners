@@ -47,6 +47,26 @@ pub fn generate_map_test(width: usize, height: usize) -> Vec<TileType> {
     map
 }
 
+pub fn generate_map_rooms_and_corridors(width: usize, height: usize) -> Vec<TileType> {
+    let mut map = vec![TileType::Wall; width * height];
+
+    let room1 = Rect::new(1, 1, 10, 10);
+    let room2 = Rect::new(12, 1, 10, 10);
+
+    place_room(&room1, &mut map);
+    place_room(&room2, &mut map);
+
+    map
+}
+
+fn place_room(room: &Rect, map: &mut [TileType]) {
+    for y in room.y1..room.y2 {
+        for x in room.x1..room.x2 {
+            map[xy_idx(x, y)] = TileType::Empty;
+        }
+    }
+}
+
 pub fn render_map(ctx: &mut BTerm, map: &[TileType]) {
     let mut y = 0;
     let mut x = 0;

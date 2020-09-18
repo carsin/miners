@@ -79,7 +79,7 @@ fn main() -> BError {
     game.world.register::<Player>();
     game.world.register::<Moving>();
 
-    game.world.insert(map::generate_tile_map(80, 50));
+    game.world.insert(map::generate_map_rooms_and_corridors(80, 50));
 
     // Create player
     game.world.create_entity()
