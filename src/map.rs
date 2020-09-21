@@ -30,69 +30,66 @@ impl Rect {
     }
 }
 
-pub fn generate_map_test(width: usize, height: usize) -> Vec<TileType> {
-    let mut map = vec![TileType::Empty; width * height];
-
-    // Make map edges walls
-    for x in 0..width {
-        map[xy_idx(x, 0)] = TileType::Wall;
-        map[xy_idx(x, height - 1)] = TileType::Wall;
-    }
-
-    for y in 0..height {
-        map[xy_idx(0, y)] = TileType::Wall;
-        map[xy_idx(width - 1, y)] = TileType::Wall;
-    }
-
-    map
+pub struct Map {
+    pub tiles: Vec<TileType>,
+    pub width: usize,
+    pub height: usize,
 }
 
-pub fn generate_map_rooms_and_corridors(width: usize, height: usize) -> Vec<TileType> {
-    let mut map = vec![TileType::Wall; width * height];
-
-    let room1 = Rect::new(1, 1, 10, 10);
-    let room2 = Rect::new(12, 1, 10, 10);
-
-    place_room(&room1, &mut map);
-    place_room(&room2, &mut map);
-
-    map
-}
-
-fn place_room(room: &Rect, map: &mut [TileType]) {
-    for y in room.y1..room.y2 {
-        for x in room.x1..room.x2 {
-            map[xy_idx(x, y)] = TileType::Empty;
+impl Map {
+    pub fn new(width: usize, height: usize) -> Self {
+        Self {
+            tiles: vec![TileType::Wall; width * height],
+            width,
+            height,
         }
     }
-}
 
-pub fn render_map(ctx: &mut BTerm, map: &[TileType]) {
-    let mut y = 0;
-    let mut x = 0;
-    for tile in map.iter() {
-        // Render a tile depending upon the tile type
-        match tile {
-            TileType::Empty => {
-                ctx.print_color(x, y, RGB::from_f32(0.5, 0.5, 0.5), RGB::from_f32(0., 0., 0.), '.');
-            }
+    pub fn generate_map_rooms_and_corridors(&mut self) {
+        let room1 = Rect::new(1, 1, 10, 10);
+        let room2 = Rect::new(12, 1, 10, 10);
 
-            TileType::Wall => {
-                ctx.print_color(x, y, RGB::from_f32(0.3, 0.3, 0.3), RGB::from_f32(0., 0., 0.), '#');
+        self.place_room(&room1);
+        self.place_room(&room2);
+    }
+
+    fn place_room(&mut self, room: &Rect) {
+        let mut map_index: usize;
+
+        for y in room.y1..room.y2 {
+            for x in room.x1..room.x2 {
+                map_index = self.xy_idx(x, y);
+                self.tiles[map_index] = TileType::Empty;
             }
         }
+    }
 
-        // Move the coordinates
-        x += 1;
-        if x > 79 {
-            x = 0;
-            y += 1;
+    pub fn render(&self, ctx: &mut BTerm) {
+        let mut y = 0;
+        let mut x = 0;
+        for tile in self.tiles.iter() {
+            // Render a tile depending upon the tile type
+            match tile {
+                TileType::Empty => {
+                    ctx.print_color(x, y, RGB::from_f32(0.5, 0.5, 0.5), RGB::from_f32(0., 0., 0.), '.');
+                }
+
+                TileType::Wall => {
+                    ctx.print_color(x, y, RGB::from_f32(0.3, 0.3, 0.3), RGB::from_f32(0., 0., 0.), '#');
+                }
+            }
+
+            // Move the coordinates
+            x += 1;
+            if x >= self.width {
+                x = 0;
+                y += 1;
+            }
         }
+    }
+
+    pub fn xy_idx(&self, x: usize, y: usize) -> usize {
+        (y * self.width) + x
     }
 }
 
-pub fn xy_idx(x: usize, y: usize) -> usize {
-    // TODO: Scale with map size
-    let width = 80;
-    (y as usize * width) + x as usize
-}

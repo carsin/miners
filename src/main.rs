@@ -47,8 +47,8 @@ impl GameState for Game {
         self.run_systems();
 
         // Render map
-        let map = self.world.fetch::<Vec<map::TileType>>();
-        map::render_map(ctx, &map);
+        let map = self.world.fetch::<map::Map>();
+        map.render(ctx);
 
         // Render entities
         let positions = self.world.read_storage::<Position>();
@@ -78,7 +78,10 @@ fn main() -> BError {
     game.world.register::<Player>();
     game.world.register::<Moving>();
 
-    game.world.insert(map::generate_map_rooms_and_corridors(80, 50));
+    let mut map = map::Map::new(80, 50);
+    map.generate_map_rooms_and_corridors();
+
+    game.world.insert(map);
 
     // Create player
     game.world.create_entity()
