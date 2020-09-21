@@ -1,3 +1,6 @@
+use std::cmp::max;
+use std::cmp::min;
+
 use bracket_lib::prelude::*;
 
 pub enum Direction {
@@ -39,27 +42,49 @@ pub struct Map {
 impl Map {
     pub fn new(width: usize, height: usize) -> Self {
         Self {
-            tiles: vec![TileType::Wall; width * height],
+            tiles: vec![],
             width,
             height,
         }
     }
 
     pub fn generate_map_rooms_and_corridors(&mut self) {
+        self.tiles = vec![TileType::Wall; self.width * self.height];
         let room1 = Rect::new(1, 1, 10, 10);
-        let room2 = Rect::new(12, 1, 10, 10);
+        let room2 = Rect::new(31, 1, 10, 10);
 
         self.place_room(&room1);
         self.place_room(&room2);
+
+        self.place_tunnel_horizontal(11, 30, 1);
     }
 
     fn place_room(&mut self, room: &Rect) {
-        let mut map_index: usize;
-
+        let mut pos: usize;
         for y in room.y1..room.y2 {
             for x in room.x1..room.x2 {
-                map_index = self.xy_idx(x, y);
-                self.tiles[map_index] = TileType::Empty;
+                pos = self.xy_idx(x, y);
+                self.tiles[pos] = TileType::Empty;
+            }
+        }
+    }
+
+    fn place_tunnel_horizontal(&mut self, x1: usize, x2: usize, y: usize) {
+        let mut pos: usize;
+        for x in min(x1, x2)..=max(x1, x2) {
+            pos = self.xy_idx(x, y);
+            if pos > 0 && pos < self.width * self.height {
+                self.tiles[pos] = TileType::Empty;
+            }
+        }
+    }
+
+    fn place_tunnel_vertical(&mut self, y1: usize, y2: usize, y: usize) {
+        let mut pos: usize;
+        for x in min(y1, y2)..=max(y1, y2) {
+            pos = self.xy_idx(x, y);
+            if pos > 0 && pos < self.width * self.height {
+                self.tiles[pos] = TileType::Empty;
             }
         }
     }
@@ -92,4 +117,3 @@ impl Map {
         (y * self.width) + x
     }
 }
-
