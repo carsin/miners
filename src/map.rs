@@ -36,6 +36,7 @@ impl Rect {
 
 pub struct Map {
     pub tiles: Vec<TileType>,
+    pub rooms: Vec<Rect>,
     pub width: usize,
     pub height: usize,
 }
@@ -44,6 +45,7 @@ impl Map {
     pub fn new(width: usize, height: usize) -> Self {
         Self {
             tiles: vec![],
+            rooms: vec![],
             width,
             height,
         }
@@ -52,29 +54,41 @@ impl Map {
     pub fn generate_map_rooms_and_corridors(&mut self, max_rooms: usize, min_room_size: usize, max_room_size: usize) {
         self.tiles = vec![TileType::Wall; self.width * self.height];
 
-        let mut rooms: Vec<Rect> = Vec::new();
-
         let mut rng = rand::thread_rng();
 
         for _ in 0..max_rooms {
             let room_w = rng.gen_range(min_room_size, max_room_size);
             let room_h = rng.gen_range(min_room_size, max_room_size);
-            let room_x = rng.gen_range(1, self.width - room_w - 1) - 1;
-            let room_y = rng.gen_range(1, self.height - room_h - 1) - 1;
+            let room_x = rng.gen_range(0, self.width - room_w - 1);
+            let room_y = rng.gen_range(0, self.height - room_h - 1);
 
             let new_room = Rect::new(room_x, room_y, room_w, room_h);
-            println!("{:?}", new_room);
 
-            let mut placing = true;
-            for other_room in rooms.iter() {
+            let mut room_fits = true;
+            for other_room in self.rooms.iter() {
                 if new_room.overlaps_with(other_room) {
-                    placing = false;
+                    room_fits = false;
                 }
             }
 
-            if placing {
+            if room_fits {
                 self.place_room(&new_room);
-                rooms.push(new_room);
+
+                if !self.rooms.is_empty() {
+                    let (new_x, new_y) = new_room.center();
+                    let (prev_x, prev_y) = self.rooms[self.rooms.len() - 1].center();
+
+                    // Generates a random bool, so 50/50
+                    if rng.gen::<bool>() {
+                        self.place_tunnel_horizontal(prev_x, new_x, prev_y);
+                        self.place_tunnel_vertical(prev_y, new_y, new_x);
+                    } else {
+                        self.place_tunnel_vertical(prev_y, new_y, new_x);
+                        self.place_tunnel_horizontal(prev_x, new_x, prev_y);
+                    }
+                }
+
+                self.rooms.push(new_room);
             }
         }
 
@@ -100,9 +114,9 @@ impl Map {
         }
     }
 
-    fn place_tunnel_vertical(&mut self, y1: usize, y2: usize, y: usize) {
+    fn place_tunnel_vertical(&mut self, y1: usize, y2: usize, x: usize) {
         let mut pos: usize;
-        for x in min(y1, y2)..=max(y1, y2) {
+        for y in min(y1, y2)..=max(y1, y2) {
             pos = self.xy_idx(x, y);
             if pos > 0 && pos < self.width * self.height {
                 self.tiles[pos] = TileType::Empty;

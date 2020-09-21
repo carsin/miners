@@ -4,8 +4,8 @@ use specs::{prelude::*, Component, VecStorage, System, ReadStorage, WriteStorage
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
 pub struct Position {
-    pub x: i32,
-    pub y: i32,
+    pub x: usize,
+    pub y: usize,
 }
 
 #[derive(Component, Debug)]

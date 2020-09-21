@@ -79,13 +79,13 @@ fn main() -> BError {
     game.world.register::<Moving>();
 
     let mut map = map::Map::new(80, 50);
-    map.generate_map_rooms_and_corridors(30, 6, 10);
-
+    map.generate_map_rooms_and_corridors(10, 6, 10);
+    let (player_x, player_y) = map.rooms[0].center();
     game.world.insert(map);
 
     // Create player
     game.world.create_entity()
-        .with(Position { x: 8, y: 8 })
+        .with(Position { x: player_x, y: player_y })
         .with(Renderable {
             glyph: '☺',
             fg: RGB::named(RED),
