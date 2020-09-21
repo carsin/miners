@@ -21,17 +21,17 @@ pub struct Renderable {
 pub struct Player {}
 
 // Test system
-#[derive(Component, Debug)]
-#[storage(VecStorage)]
-pub struct Moving {}
+// #[derive(Component, Debug)]
+// #[storage(VecStorage)]
+// pub struct Moving {}
 
-impl<'a> System<'a> for Moving {
-    type SystemData = (ReadStorage<'a, Moving>, WriteStorage<'a, Position>);
+// impl<'a> System<'a> for Moving {
+//     type SystemData = (ReadStorage<'a, Moving>, WriteStorage<'a, Position>);
 
-    fn run(&mut self, (entity, mut position): Self::SystemData) {
-        for (_entity, position) in (&entity, &mut position).join() {
-            position.y += 1;
-            if position.y > 49 { position.y = 1; }
-        }
-    }
-}
+//     fn run(&mut self, (entity, mut position): Self::SystemData) {
+//         for (_entity, position) in (&entity, &mut position).join() {
+//             position.y += 1;
+//             if position.y > 49 { position.y = 1; }
+//         }
+//     }
+// }

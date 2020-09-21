@@ -1,10 +1,10 @@
 use specs::{WorldExt, World, prelude::*};
-use super::{Direction, Player, Position, map, util};
+use super::{Direction, Player, Position, map, Map, util};
 
 pub fn move_player(dir: Direction, world: &mut World) {
     let mut positions = world.write_storage::<Position>();
     let mut player = world.write_storage::<Player>();
-    let map = world.fetch::<map::Map>();
+    let map = world.fetch::<Map>();
 
     let (delta_x, delta_y) = match dir {
         Direction::North => { (0, -1) },

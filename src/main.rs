@@ -1,8 +1,8 @@
 use bracket_terminal::prelude::*;
 use specs::prelude::*;
 
-use components::{Player, Position, Renderable, Moving};
-use map::Direction;
+use components::{Player, Position, Renderable, Viewshed};
+use map::{Direction, Map};
 
 mod components;
 mod map;
@@ -47,7 +47,7 @@ impl GameState for Game {
         self.run_systems();
 
         // Render map
-        let map = self.world.fetch::<map::Map>();
+        let map = self.world.fetch::<Map>();
         map.render(ctx);
 
         // Render entities
@@ -76,9 +76,9 @@ fn main() -> BError {
     game.world.register::<Position>();
     game.world.register::<Renderable>();
     game.world.register::<Player>();
-    game.world.register::<Moving>();
+    // game.world.register::<Moving>();
 
-    let mut map = map::Map::new(80, 50);
+    let mut map = Map::new(80, 50);
     map.generate_map_rooms_and_corridors(10, 6, 10);
     let (player_x, player_y) = map.rooms[0].center();
     game.world.insert(map);
@@ -91,7 +91,7 @@ fn main() -> BError {
             fg: RGB::named(RED),
             bg: RGB::named(BLACK),
         })
-        .with(Player{})
+        .with(Player {})
         .build();
 
     // Testing NPCs

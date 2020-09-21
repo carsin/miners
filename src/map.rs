@@ -13,19 +13,19 @@ pub enum TileType {
 }
 
 #[derive(Debug)]
-pub struct Rect {
+pub struct Room {
     pub x1: i32,
     pub x2: i32,
     pub y1: i32,
     pub y2: i32,
 }
 
-impl Rect {
+impl Room {
     pub fn new(x: i32, y: i32, w: usize, h: usize) -> Self {
         Self {x1: x, y1: y, x2: x + w as i32, y2: y + h as i32}
     }
 
-    pub fn overlaps_with(&self, other: &Rect) -> bool {
+    pub fn overlaps_with(&self, other: &Room) -> bool {
         self.x1 <= other.x2 && self.x2 >= other.x1 && self.y1 <= other.y2 && self.y2 >= other.y1
     }
 
@@ -36,7 +36,7 @@ impl Rect {
 
 pub struct Map {
     pub tiles: Vec<TileType>,
-    pub rooms: Vec<Rect>,
+    pub rooms: Vec<Room>,
     pub width: usize,
     pub height: usize,
 }
@@ -62,7 +62,7 @@ impl Map {
             let room_x = rng.gen_range(0, self.width - room_w - 1) as i32;
             let room_y = rng.gen_range(0, self.height - room_h - 1) as i32;
 
-            let new_room = Rect::new(room_x, room_y, room_w, room_h);
+            let new_room = Room::new(room_x, room_y, room_w, room_h);
 
             let mut room_fits = true;
             for other_room in self.rooms.iter() {
@@ -94,7 +94,7 @@ impl Map {
 
     }
 
-    fn place_room(&mut self, room: &Rect) {
+    fn place_room(&mut self, room: &Room) {
         let mut pos: usize;
         for y in room.y1..room.y2 {
             for x in room.x1..room.x2 {
