@@ -14,22 +14,22 @@ pub enum TileType {
 
 #[derive(Debug)]
 pub struct Rect {
-    pub x1: usize,
-    pub x2: usize,
-    pub y1: usize,
-    pub y2: usize,
+    pub x1: i32,
+    pub x2: i32,
+    pub y1: i32,
+    pub y2: i32,
 }
 
 impl Rect {
-    pub fn new(x: usize, y: usize, w: usize, h: usize,) -> Self {
-        Self {x1: x, y1: y, x2: x + w, y2: y + h }
+    pub fn new(x: i32, y: i32, w: usize, h: usize) -> Self {
+        Self {x1: x, y1: y, x2: x + w as i32, y2: y + h as i32}
     }
 
     pub fn overlaps_with(&self, other: &Rect) -> bool {
         self.x1 <= other.x2 && self.x2 >= other.x1 && self.y1 <= other.y2 && self.y2 >= other.y1
     }
 
-    pub fn center(&self) -> (usize, usize) {
+    pub fn center(&self) -> (i32, i32) {
         ((self.x1 + self.x2) / 2, (self.y1 + self.y2) / 2)
     }
 }
@@ -59,8 +59,8 @@ impl Map {
         for _ in 0..max_rooms {
             let room_w = rng.gen_range(min_room_size, max_room_size);
             let room_h = rng.gen_range(min_room_size, max_room_size);
-            let room_x = rng.gen_range(0, self.width - room_w - 1);
-            let room_y = rng.gen_range(0, self.height - room_h - 1);
+            let room_x = rng.gen_range(0, self.width - room_w - 1) as i32;
+            let room_y = rng.gen_range(0, self.height - room_h - 1) as i32;
 
             let new_room = Rect::new(room_x, room_y, room_w, room_h);
 
@@ -104,7 +104,7 @@ impl Map {
         }
     }
 
-    fn place_tunnel_horizontal(&mut self, x1: usize, x2: usize, y: usize) {
+    fn place_tunnel_horizontal(&mut self, x1: i32, x2: i32, y: i32) {
         let mut pos: usize;
         for x in min(x1, x2)..=max(x1, x2) {
             pos = self.xy_idx(x, y);
@@ -114,7 +114,7 @@ impl Map {
         }
     }
 
-    fn place_tunnel_vertical(&mut self, y1: usize, y2: usize, x: usize) {
+    fn place_tunnel_vertical(&mut self, y1: i32, y2: i32, x: i32) {
         let mut pos: usize;
         for y in min(y1, y2)..=max(y1, y2) {
             pos = self.xy_idx(x, y);
@@ -148,7 +148,7 @@ impl Map {
         }
     }
 
-    pub fn xy_idx(&self, x: usize, y: usize) -> usize {
-        (y * self.width) + x
+    pub fn xy_idx(&self, x: i32, y: i32) -> usize {
+        (y as usize * self.width) + x as usize
     }
 }
