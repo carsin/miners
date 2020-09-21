@@ -79,7 +79,7 @@ fn main() -> BError {
     game.world.register::<Moving>();
 
     let mut map = map::Map::new(80, 50);
-    map.generate_map_rooms_and_corridors();
+    map.generate_map_rooms_and_corridors(30, 6, 10);
 
     game.world.insert(map);
 

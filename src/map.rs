@@ -1,5 +1,5 @@
-use std::cmp::max;
-use std::cmp::min;
+use std::cmp::{max, min};
+use rand::Rng;
 
 use bracket_lib::prelude::*;
 
@@ -12,6 +12,7 @@ pub enum TileType {
     Empty, Wall
 }
 
+#[derive(Debug)]
 pub struct Rect {
     pub x1: usize,
     pub x2: usize,
@@ -48,15 +49,35 @@ impl Map {
         }
     }
 
-    pub fn generate_map_rooms_and_corridors(&mut self) {
+    pub fn generate_map_rooms_and_corridors(&mut self, max_rooms: usize, min_room_size: usize, max_room_size: usize) {
         self.tiles = vec![TileType::Wall; self.width * self.height];
-        let room1 = Rect::new(1, 1, 10, 10);
-        let room2 = Rect::new(31, 1, 10, 10);
 
-        self.place_room(&room1);
-        self.place_room(&room2);
+        let mut rooms: Vec<Rect> = Vec::new();
 
-        self.place_tunnel_horizontal(11, 30, 1);
+        let mut rng = rand::thread_rng();
+
+        for _ in 0..max_rooms {
+            let room_w = rng.gen_range(min_room_size, max_room_size);
+            let room_h = rng.gen_range(min_room_size, max_room_size);
+            let room_x = rng.gen_range(1, self.width - room_w - 1) - 1;
+            let room_y = rng.gen_range(1, self.height - room_h - 1) - 1;
+
+            let new_room = Rect::new(room_x, room_y, room_w, room_h);
+            println!("{:?}", new_room);
+
+            let mut placing = true;
+            for other_room in rooms.iter() {
+                if new_room.overlaps_with(other_room) {
+                    placing = false;
+                }
+            }
+
+            if placing {
+                self.place_room(&new_room);
+                rooms.push(new_room);
+            }
+        }
+
     }
 
     fn place_room(&mut self, room: &Rect) {

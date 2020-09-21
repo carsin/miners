@@ -8,3 +8,4 @@ edition = "2018"
 bracket-terminal = "0.8.1"
 bracket-lib = { version = "0.8.1", features = [ "specs" ] }
 specs = { version = "0.16.1", features = ["specs-derive"] }
+rand = "*"
