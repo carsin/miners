@@ -47,6 +47,7 @@ impl Room {
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub revealed_tiles: Vec<bool>,
+    pub visible_tiles: Vec<bool>,
     pub rooms: Vec<Room>,
     pub width: usize,
     pub height: usize,
@@ -57,6 +58,7 @@ impl Map {
         Self {
             tiles: vec![],
             revealed_tiles: vec![false; width * height],
+            visible_tiles: vec![false; width * height],
             rooms: vec![],
             width,
             height,
@@ -137,32 +139,33 @@ impl Map {
     }
 
     pub fn render(&self, world: &World, ctx: &mut BTerm) {
-        let mut viewsheds = world.write_storage::<components::Viewshed>();
-        let mut players = world.write_storage::<components::Player>();
-
-        for (_player, viewshed) in (&mut players, &mut viewsheds).join() {
-            let mut y = 0;
-            let mut x = 0;
-            for (idx, tile) in self.tiles.iter().enumerate() {
-                // Render a tile depending upon the tile type
-                if self.revealed_tiles[idx] {
-                    match tile {
-                        TileType::Floor => {
-                            ctx.print_color(x, y, RGB::from_f32(0.5, 0.5, 0.5), RGB::from_f32(0., 0., 0.), '.');
-                        }
-
-                        TileType::Wall => {
-                            ctx.print_color(x, y, RGB::from_f32(0.3, 0.3, 0.3), RGB::from_f32(0., 0., 0.), '#');
-                        }
+        let mut y = 0;
+        let mut x = 0;
+        for (idx, tile) in self.tiles.iter().enumerate() {
+            // Render a tile depending upon the tile type
+            if self.revealed_tiles[idx] {
+                let (glyph, mut fg, mut bg) = match tile {
+                    TileType::Floor => {
+                        ('.', RGB::from_f32(0.4, 0.4, 0.4), RGB::from_f32(0.2, 0.2, 0.2))
+                    },
+                    TileType::Wall => {
+                        ('#', RGB::from_f32(0.6, 0.6, 0.6), RGB::from_f32(0.2, 0.2, 0.2))
                     }
+                };
+
+                if !self.visible_tiles[idx] {
+                    fg = RGB::from_f32(0.2, 0.2, 0.2);
+                    bg = RGB::from_f32(0.0, 0.0, 0.0);
                 }
 
-                // Move the coordinates
-                x += 1;
-                if x >= self.width as i32 {
-                    x = 0;
-                    y += 1;
-                }
+                ctx.print_color(x, y, fg, bg, glyph);
+            }
+
+            // Move the coordinates
+            x += 1;
+            if x >= self.width as i32 {
+                x = 0;
+                y += 1;
             }
         }
     }

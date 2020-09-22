@@ -61,16 +61,21 @@ impl<'a> System<'a> for VisibilitySystem {
     fn run(&mut self, data : Self::SystemData) {
         let (mut map, entities, mut viewshed, pos, player) = data;
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
-            viewshed.visible_tiles.clear();
-            viewshed.visible_tiles = fov(Position { x: pos.x, y: pos.y }, viewshed.range, &*map);
-            viewshed.visible_tiles.retain(|p| p.x >= 0 && p.x < map.width as i32 && p.y >= 0 && p.y < map.height as i32 ); // prune everything not within map bounds
+            if viewshed.dirty {
+                viewshed.dirty = false;
+                viewshed.visible_tiles.clear();
+                viewshed.visible_tiles = fov(Position { x: pos.x, y: pos.y }, viewshed.range, &*map);
+                viewshed.visible_tiles.retain(|p| p.x >= 0 && p.x < map.width as i32 && p.y >= 0 && p.y < map.height as i32 ); // prune everything not within map bounds
 
-            // Reveal around player
-            let player: Option<&Player> = player.get(ent);
-            if let Some(player) = player {
-                for vis in viewshed.visible_tiles.iter() {
-                    let idx = map.xy_idx(vis.x, vis.y);
-                    map.revealed_tiles[idx] = true;
+                // Reveal around player
+                let player: Option<&Player> = player.get(ent);
+                if let Some(_p) = player {
+                    for tile in map.visible_tiles.iter_mut() { *tile = false } ;
+                    for vis in viewshed.visible_tiles.iter() {
+                        let idx = map.xy_idx(vis.x, vis.y);
+                        map.revealed_tiles[idx] = true;
+                        map.visible_tiles[idx] = true;
+                    }
                 }
             }
         }
