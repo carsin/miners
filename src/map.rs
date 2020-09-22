@@ -1,15 +1,25 @@
 use std::cmp::{max, min};
+use components::Position;
 use rand::Rng;
 
 use bracket_lib::prelude::*;
+use specs::prelude::*;
+use super::components;
 
+#[derive(Copy, Clone)]
 pub enum Direction {
     North, South, East, West
 }
 
+impl Direction {
+    pub fn iterator() -> impl Iterator<Item = Direction> {
+        [Direction::North, Direction::East, Direction::South, Direction::West].iter().copied()
+    }
+}
+
 #[derive(PartialEq, Copy, Clone)]
 pub enum TileType {
-    Empty, Wall
+    Floor, Wall
 }
 
 #[derive(Debug)]
@@ -99,7 +109,7 @@ impl Map {
         for y in room.y1..room.y2 {
             for x in room.x1..room.x2 {
                 pos = self.xy_idx(x, y);
-                self.tiles[pos] = TileType::Empty;
+                self.tiles[pos] = TileType::Floor;
             }
         }
     }
@@ -109,7 +119,7 @@ impl Map {
         for x in min(x1, x2)..=max(x1, x2) {
             pos = self.xy_idx(x, y);
             if pos > 0 && pos < self.width * self.height {
-                self.tiles[pos] = TileType::Empty;
+                self.tiles[pos] = TileType::Floor;
             }
         }
     }
@@ -119,31 +129,39 @@ impl Map {
         for y in min(y1, y2)..=max(y1, y2) {
             pos = self.xy_idx(x, y);
             if pos > 0 && pos < self.width * self.height {
-                self.tiles[pos] = TileType::Empty;
+                self.tiles[pos] = TileType::Floor;
             }
         }
     }
 
-    pub fn render(&self, ctx: &mut BTerm) {
-        let mut y = 0;
-        let mut x = 0;
-        for tile in self.tiles.iter() {
-            // Render a tile depending upon the tile type
-            match tile {
-                TileType::Empty => {
-                    ctx.print_color(x, y, RGB::from_f32(0.5, 0.5, 0.5), RGB::from_f32(0., 0., 0.), '.');
+    pub fn render(&self, world: &World, ctx: &mut BTerm) {
+        let mut viewsheds = world.write_storage::<components::Viewshed>();
+        let mut players = world.write_storage::<components::Player>();
+
+        for (_player, viewshed) in (&mut players, &mut viewsheds).join() {
+            let mut y = 0;
+            let mut x = 0;
+            for tile in self.tiles.iter() {
+                // Render a tile depending upon the tile type
+                let pos = Position { x, y };
+                if viewshed.visible_tiles.contains(&pos) {
+                    match tile {
+                        TileType::Floor => {
+                            ctx.print_color(x, y, RGB::from_f32(0.5, 0.5, 0.5), RGB::from_f32(0., 0., 0.), '.');
+                        }
+
+                        TileType::Wall => {
+                            ctx.print_color(x, y, RGB::from_f32(0.3, 0.3, 0.3), RGB::from_f32(0., 0., 0.), '#');
+                        }
+                    }
                 }
 
-                TileType::Wall => {
-                    ctx.print_color(x, y, RGB::from_f32(0.3, 0.3, 0.3), RGB::from_f32(0., 0., 0.), '#');
+                // Move the coordinates
+                x += 1;
+                if x >= self.width as i32 {
+                    x = 0;
+                    y += 1;
                 }
-            }
-
-            // Move the coordinates
-            x += 1;
-            if x >= self.width {
-                x = 0;
-                y += 1;
             }
         }
     }

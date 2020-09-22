@@ -3,11 +3,13 @@ use specs::prelude::*;
 
 use components::{Player, Position, Renderable, Viewshed};
 use map::{Direction, Map};
+use visibility_system::VisibilitySystem;
 
 mod components;
 mod map;
 mod player;
 mod util;
+mod visibility_system;
 
 struct Game {
     world: World
@@ -15,8 +17,8 @@ struct Game {
 
 impl Game {
     fn run_systems(&mut self) {
-        // let mut moving = components::Moving{};
-        // moving.run_now(&self.world);
+        let mut visibility = VisibilitySystem{};
+        visibility.run_now(&self.world);
 
         // Apply changes to World
         self.world.maintain();
@@ -48,7 +50,7 @@ impl GameState for Game {
 
         // Render map
         let map = self.world.fetch::<Map>();
-        map.render(ctx);
+        map.render(&self.world, ctx);
 
         // Render entities
         let positions = self.world.read_storage::<Position>();
@@ -76,6 +78,7 @@ fn main() -> BError {
     game.world.register::<Position>();
     game.world.register::<Renderable>();
     game.world.register::<Player>();
+    game.world.register::<Viewshed>();
     // game.world.register::<Moving>();
 
     let mut map = Map::new(80, 50);
@@ -92,6 +95,7 @@ fn main() -> BError {
             bg: RGB::named(BLACK),
         })
         .with(Player {})
+        .with(Viewshed { visible_tiles : vec![], range: 8 })
         .build();
 
     // Testing NPCs

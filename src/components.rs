@@ -1,7 +1,7 @@
 use bracket_terminal::prelude::RGB;
 use specs::{prelude::*, Component, VecStorage, System, ReadStorage, WriteStorage};
 
-#[derive(Component, Debug)]
+#[derive(PartialEq, Copy, Clone, Component, Debug)]
 #[storage(VecStorage)]
 pub struct Position {
     pub x: i32,
@@ -19,6 +19,13 @@ pub struct Renderable {
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
 pub struct Player {}
+
+#[derive(Component, Debug)]
+#[storage(VecStorage)]
+pub struct Viewshed {
+    pub visible_tiles: Vec<Position>,
+    pub range: usize,
+}
 
 // Test system
 // #[derive(Component, Debug)]
