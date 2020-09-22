@@ -94,7 +94,7 @@ fn main() -> BError {
             bg: RGB::named(BLACK),
         })
         .with(Player {})
-        .with(Viewshed { visible_tiles : vec![], range: 5 })
+        .with(Viewshed { visible_tiles : vec![], range: 5, dirty: true })
         .build();
 
     // Call into bracket_terminal to run the main loop. This handles rendering, and calls back into State's tick function every cycle. The box is needed to work around lifetime handling.

@@ -25,4 +25,5 @@ pub struct Player {}
 pub struct Viewshed {
     pub visible_tiles: Vec<Position>,
     pub range: usize,
+    pub dirty: bool,
 }
