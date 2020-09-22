@@ -46,6 +46,7 @@ impl Room {
 
 pub struct Map {
     pub tiles: Vec<TileType>,
+    pub revealed_tiles: Vec<bool>,
     pub rooms: Vec<Room>,
     pub width: usize,
     pub height: usize,
@@ -55,6 +56,7 @@ impl Map {
     pub fn new(width: usize, height: usize) -> Self {
         Self {
             tiles: vec![],
+            revealed_tiles: vec![false; width * height],
             rooms: vec![],
             width,
             height,
@@ -141,10 +143,9 @@ impl Map {
         for (_player, viewshed) in (&mut players, &mut viewsheds).join() {
             let mut y = 0;
             let mut x = 0;
-            for tile in self.tiles.iter() {
+            for (idx, tile) in self.tiles.iter().enumerate() {
                 // Render a tile depending upon the tile type
-                let pos = Position { x, y };
-                if viewshed.visible_tiles.contains(&pos) {
+                if self.revealed_tiles[idx] {
                     match tile {
                         TileType::Floor => {
                             ctx.print_color(x, y, RGB::from_f32(0.5, 0.5, 0.5), RGB::from_f32(0., 0., 0.), '.');

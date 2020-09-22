@@ -79,10 +79,9 @@ fn main() -> BError {
     game.world.register::<Renderable>();
     game.world.register::<Player>();
     game.world.register::<Viewshed>();
-    // game.world.register::<Moving>();
 
     let mut map = Map::new(80, 50);
-    map.generate_map_rooms_and_corridors(10, 6, 10);
+    map.generate_map_rooms_and_corridors(30, 3, 8);
     let (player_x, player_y) = map.rooms[0].center();
     game.world.insert(map);
 
@@ -95,21 +94,8 @@ fn main() -> BError {
             bg: RGB::named(BLACK),
         })
         .with(Player {})
-        .with(Viewshed { visible_tiles : vec![], range: 8 })
+        .with(Viewshed { visible_tiles : vec![], range: 5 })
         .build();
-
-    // Testing NPCs
-    // for i in 0..10 {
-    //     game.world.create_entity()
-    //         .with(Position { x: i , y: 1 })
-    //         .with(Renderable {
-    //             glyph: '☺',
-    //             fg: RGB::named(RED),
-    //             bg: RGB::named(BLACK),
-    //         })
-    //         .with(Moving{})
-    //         .build();
-    // }
 
     // Call into bracket_terminal to run the main loop. This handles rendering, and calls back into State's tick function every cycle. The box is needed to work around lifetime handling.
     main_loop(context, game)
