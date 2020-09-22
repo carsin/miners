@@ -106,9 +106,12 @@ fn fov(origin: Position, range: usize, map: &Map) -> Vec<Position> {
 
             }
 
-
             if prev_tiletype == Some(TileType::Floor) {
                 rows.push(current_row.next());
+            }
+
+            if current_row.depth >= range as i32 {
+                break;
             }
         }
     }

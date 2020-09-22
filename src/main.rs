@@ -61,7 +61,7 @@ impl GameState for Game {
         }
 
         // Render FPS
-        // ctx.print_centered(0, &format!("{} fps", ctx.fps as u32));
+        ctx.print_centered(0, &format!("{} fps", ctx.fps as u32));
     }
 }
 
