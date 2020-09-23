@@ -1,5 +1,6 @@
 use specs::{WorldExt, World, prelude::*};
-use super::{Direction, Player, Position, map, Map, util, Viewshed};
+use bracket_terminal::prelude::*;
+use super::{Direction, Player, Position, map, Map, util, Viewshed, Game, State};
 
 pub fn move_player(dir: Direction, world: &mut World) {
     let mut positions = world.write_storage::<Position>();
@@ -23,4 +24,18 @@ pub fn move_player(dir: Direction, world: &mut World) {
             viewshed.dirty = true;
         }
     }
+}
+
+pub fn input(game: &mut Game, ctx: &mut BTerm) -> State {
+    match ctx.key {
+        None => { return State::Paused }
+        Some(key) => match key {
+            VirtualKeyCode::W => move_player(Direction::North, &mut game.world),
+            VirtualKeyCode::S => move_player(Direction::South, &mut game.world),
+            VirtualKeyCode::A => move_player(Direction::East, &mut game.world),
+            VirtualKeyCode::D => move_player(Direction::West, &mut game.world),
+            _ => { return State::Paused }
+        }
+    }
+    State::Running
 }

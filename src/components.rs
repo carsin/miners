@@ -27,3 +27,7 @@ pub struct Viewshed {
     pub range: usize,
     pub dirty: bool,
 }
+
+#[derive(Component, Debug)]
+#[storage(VecStorage)]
+pub struct Monster {}
