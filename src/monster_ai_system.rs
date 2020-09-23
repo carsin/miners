@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use super::{Viewshed, Position, Monster, Map};
+use super::{Viewshed, Position, Monster};
 
 pub struct MonsterAI {
 

@@ -13,6 +13,9 @@ mod util;
 mod visibility_system;
 mod monster_ai_system;
 
+const GAME_WIDTH: usize = 80;
+const GAME_HEIGHT: usize = 60;
+
 #[derive(PartialEq, Copy, Clone)]
 pub enum State {
     Paused,
@@ -52,7 +55,7 @@ impl GameState for Game {
 
         // Render map
         let map = self.world.fetch::<Map>();
-        map.render(&self.world, ctx);
+        map.render(ctx);
 
         // Render entities
         let positions = self.world.read_storage::<Position>();
@@ -70,10 +73,17 @@ impl GameState for Game {
     }
 }
 
+// Options: Kjammer_16x16, Md_16x16, Yayo16x16, Zilk16x16
+bracket_terminal::embedded_resource!(TILE_FONT, "../resources/Zilk_16x16.png");
+
 fn main() -> BError {
-    // TODO: better game sizing
-    let context = BTermBuilder::simple80x50()
+    bracket_terminal::link_resource!(TILE_FONT, "resources/Zilk_16x16.png");
+    let context = BTermBuilder::new()
+        .with_tile_dimensions(16, 16)
+        .with_dimensions(GAME_WIDTH, GAME_HEIGHT)
+        .with_font("Zilk_16x16.png", 16, 16)
         .with_title("miners")
+        .with_simple_console(GAME_WIDTH, GAME_HEIGHT, "Zilk_16x16.png")
         .build()?;
 
     let mut game: Game = Game {
@@ -87,8 +97,8 @@ fn main() -> BError {
     game.world.register::<Viewshed>();
     game.world.register::<Monster>();
 
-    let mut map = Map::new(80, 50);
-    map.generate_map_rooms_and_corridors(30, 3, 8);
+    let mut map = Map::new(GAME_WIDTH, GAME_HEIGHT);
+    map.generate_map_rooms_and_corridors(10, 5, 15);
 
     let (player_x, player_y) = map.rooms[0].center();
     for room in map.rooms.iter().skip(1) {
@@ -116,7 +126,7 @@ fn main() -> BError {
             bg: RGB::from_f32(0.2, 0.2, 0.2),
         })
         .with(Player {})
-        .with(Viewshed { visible_tiles : vec![], range: 5, dirty: true })
+        .with(Viewshed { visible_tiles : vec![], range: 8, dirty: true })
         .build();
 
     // Call into bracket_terminal to run the main loop. This handles rendering, and calls back into State's tick function every cycle. The box is needed to work around lifetime handling.

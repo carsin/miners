@@ -1,10 +1,7 @@
 use std::cmp::{max, min};
-use components::Position;
 use rand::Rng;
 
 use bracket_lib::prelude::*;
-use specs::prelude::*;
-use super::components;
 
 #[derive(Copy, Clone)]
 pub enum Direction {
@@ -138,7 +135,7 @@ impl Map {
         }
     }
 
-    pub fn render(&self, world: &World, ctx: &mut BTerm) {
+    pub fn render(&self, ctx: &mut BTerm) {
         let mut y = 0;
         let mut x = 0;
         for (idx, tile) in self.tiles.iter().enumerate() {

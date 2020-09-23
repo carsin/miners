@@ -1,5 +1,5 @@
 use bracket_terminal::prelude::RGB;
-use specs::{prelude::*, Component, VecStorage, System, ReadStorage, WriteStorage};
+use specs::{Component, VecStorage};
 
 #[derive(PartialEq, Copy, Clone, Component, Debug)]
 #[storage(VecStorage)]
