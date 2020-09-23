@@ -73,8 +73,8 @@ impl Map {
         for _ in 0..max_rooms {
             let room_w = rng.gen_range(min_room_size, max_room_size);
             let room_h = rng.gen_range(min_room_size, max_room_size);
-            let room_x = rng.gen_range(0, self.width - room_w - 1) as i32;
-            let room_y = rng.gen_range(0, self.height - room_h - 1) as i32;
+            let room_x = rng.gen_range(1, self.width - room_w - 1) as i32;
+            let room_y = rng.gen_range(1, self.height - room_h - 1) as i32;
 
             let new_room = Room::new(room_x, room_y, room_w, room_h);
 
