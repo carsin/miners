@@ -16,7 +16,15 @@ impl Quadrant {
             Direction::East => (self.origin.x + old_pos.y, self.origin.y + old_pos.x),
             Direction::West => (self.origin.x - old_pos.y, self.origin.y - old_pos.x)
         };
-Position { x, y }}} struct QuadrantRow {depth: i32, start_slope: f32, end_slope: f32,
+
+        Position { x, y }
+    }
+}
+
+struct QuadrantRow {
+    depth: i32,
+    start_slope: f32,
+    end_slope: f32,
 }
 
 impl QuadrantRow {
