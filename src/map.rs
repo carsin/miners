@@ -22,7 +22,7 @@ pub enum TileType {
 impl TileType {
     fn get_data(self) -> TileData {
         match self {
-            Floor => {
+            TileType::Floor => {
                 TileData {
                     glyph: '.',
                     base_fg: RGB::from_f32(0.3, 0.3, 0.3),
@@ -31,10 +31,10 @@ impl TileType {
                 }
             },
 
-            Wall => {
+            TileType::Wall => {
                 TileData {
                     glyph: '#',
-                    base_fg: RGB::from_f32(0.1, 0.1, 0.1),
+                    base_fg: RGB::from_f32(0.5, 0.5, 0.5),
                     base_bg: RGB::from_f32(0.1, 0.1, 0.1),
                     blocks_movement: true,
                 }
@@ -77,8 +77,6 @@ impl Room {
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub light_levels: Vec<Option<f32>>,
-    // pub revealed_tiles: Vec<bool>,
-    // pub visible_tiles: Vec<bool>,
     pub rooms: Vec<Room>,
     pub width: usize,
     pub height: usize,
@@ -89,8 +87,6 @@ impl Map {
         Self {
             tiles: vec![],
             light_levels: vec![None; width * height], // initialize all tiles to none (unrevealed)
-            // revealed_tiles: vec![false; width * height],
-            // visible_tiles: vec![false; width * height],
             rooms: vec![],
             width,
             height,

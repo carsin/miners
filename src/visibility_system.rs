@@ -2,7 +2,7 @@ use specs::prelude::*;
 
 use super::{Viewshed, Position, Map, Direction, util, map::TileType, Player};
 
-const BASE_LIGHT_LEVEL: f32 = 0.07;
+const BASE_LIGHT_LEVEL: f32 = 0.1;
 
 struct Quadrant {
     origin: Position,
@@ -129,7 +129,7 @@ fn shadowcast(origin: Position, strength: usize, map: &Map) -> (Vec<Position>, V
                     // reveal
                     visible_tiles.push(quadrant.map_pos(&curr_tile));
                     // TODO: Fine tune light levels
-                    light_levels.push(Some(1.0 / current_row.depth as f32));
+                    light_levels.push(Some(BASE_LIGHT_LEVEL.max(1.0 / current_row.depth as f32)));
                 }
 
                 if prev_tiletype == Some(TileType::Wall) && curr_tiletype == Some(TileType::Floor) {
