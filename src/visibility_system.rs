@@ -1,8 +1,6 @@
 use specs::prelude::*;
 
-use super::{Viewshed, Position, Map, Direction, util, map::TileType, Player};
-
-const BASE_LIGHT_LEVEL: f32 = 0.05;
+use super::{Viewshed, Position, Map, Direction, util, map::TileType, Player, BASE_LIGHT_LEVEL};
 
 struct Quadrant {
     origin: Position,
@@ -71,6 +69,7 @@ impl<'a> System<'a> for VisibilitySystem {
                 viewshed.visible_tiles.clear();
                 viewshed.light_levels.clear();
 
+                // render around player
                 let shadow_data = shadowcast(Position { x: pos.x, y: pos.y }, viewshed.strength, &*map);
                 viewshed.visible_tiles = shadow_data.0;
                 viewshed.light_levels = shadow_data.1;
@@ -78,12 +77,12 @@ impl<'a> System<'a> for VisibilitySystem {
                 // remove tiles not in map
                 viewshed.visible_tiles.retain(|p| p.x >= 0 && p.x < map.width as i32 && p.y >= 0 && p.y < map.height as i32 ); // prune everything not within map bounds
 
-                // Reveal around player
+                // TODO: Refactor
+                // I want to get light from specific origins for stuff like placing torches, not just around player
                 let player: Option<&Player> = player.get(ent);
                 if let Some(_p) = player {
                     // clear visible tiles
                     for tile in map.light_levels.iter_mut() {
-
                         match tile {
                             None => *tile = None, // if tile hasn't been revealed, keep it set to none
                             Some(_) => *tile = Some(BASE_LIGHT_LEVEL), // if it has been previously revealed, make it dark.
@@ -119,8 +118,8 @@ fn shadowcast(origin: Position, strength: f32, map: &Map) -> (Vec<Position>, Vec
         while !rows.is_empty() {
             let mut current_row = rows.pop().unwrap();
             let mut prev_tile: Option<Position> = None;
-
             let mut prev_tiletype: Option<TileType> = None;
+
             for curr_tile in current_row.tiles() {
                 prev_tiletype = get_tiletype(&map, &prev_tile, &quadrant);
                 let curr_tiletype = get_tiletype(&map, &Some(curr_tile), &quadrant);

@@ -15,6 +15,7 @@ mod monster_ai_system;
 
 const GAME_WIDTH: usize = 60;
 const GAME_HEIGHT: usize = 50;
+const BASE_LIGHT_LEVEL: f32 = 0.05;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum State {
@@ -63,9 +64,14 @@ impl GameState for Game {
 
         for (position, entity) in (&positions, &renderables).join() {
             let idx = map.xy_idx(position.x, position.y);
-            // TODO: change entity light levels
             if let Some(light_level) = map.light_levels[idx] {
-                ctx.print_color(position.x, position.y, entity.fg, entity.bg, entity.glyph);
+                // TODO: Change to if in player FOV
+                // only render if entity is lit
+                if light_level > BASE_LIGHT_LEVEL {
+                    let fg = entity.fg.to_rgba(light_level);
+                    let bg = entity.bg.to_rgba(light_level);
+                    ctx.print_color(position.x, position.y, fg, bg, entity.glyph);
+                }
             }
         }
 
@@ -110,19 +116,19 @@ fn main() -> BError {
     let (player_x, player_y) = map.rooms[0].center();
 
     // place monsters in center of each room
-    // for room in map.rooms.iter().skip(1) {
-    //     let (x, y) = room.center();
-    //     game.world.create_entity()
-    //         .with(Position { x, y })
-    //         .with(Renderable {
-    //             glyph: 'g',
-    //             fg: RGB::named(RED),
-    //             bg: RGB::named(BLACK),
-    //         })
-    //         .with(Viewshed { visible_tiles: vec![], light_levels: vec![], strength: 5.0, dirty: true })
-    //         .with(Monster {})
-    //         .build();
-    // }
+    for room in map.rooms.iter().skip(1) {
+        let (x, y) = room.center();
+        game.world.create_entity()
+            .with(Position { x, y })
+            .with(Renderable {
+                glyph: 'g',
+                fg: RGB::named(RED),
+                bg: RGB::named(BLACK),
+            })
+            .with(Viewshed { visible_tiles: vec![], light_levels: vec![], strength: 5.0, dirty: true })
+            .with(Monster {})
+            .build();
+    }
 
     game.world.insert(map);
 
