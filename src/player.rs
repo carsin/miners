@@ -11,8 +11,8 @@ pub fn move_player(dir: Direction, world: &mut World) {
     let (delta_x, delta_y) = match dir {
         Direction::North => { (0, -1) },
         Direction::South => { (0, 1) }
-        Direction::East => { (-1, 0) }
-        Direction::West => { (1, 0) }
+        Direction::East => { (1, 0) }
+        Direction::West => { (-1, 0) }
     };
 
     for (_player, pos, viewshed) in (&mut player, &mut positions, &mut viewsheds).join() {
@@ -30,10 +30,10 @@ pub fn input(game: &mut Game, ctx: &mut BTerm) -> State {
     match ctx.key {
         None => { return State::Paused }
         Some(key) => match key {
-            VirtualKeyCode::K => move_player(Direction::North, &mut game.world),
-            VirtualKeyCode::J => move_player(Direction::South, &mut game.world),
-            VirtualKeyCode::H => move_player(Direction::East, &mut game.world),
-            VirtualKeyCode::L => move_player(Direction::West, &mut game.world),
+            VirtualKeyCode::K | VirtualKeyCode::W => move_player(Direction::North, &mut game.world),
+            VirtualKeyCode::J | VirtualKeyCode::S => move_player(Direction::South, &mut game.world),
+            VirtualKeyCode::L | VirtualKeyCode::D => move_player(Direction::East, &mut game.world),
+            VirtualKeyCode::H | VirtualKeyCode::A => move_player(Direction::West, &mut game.world),
             _ => { return State::Paused }
         }
     }
