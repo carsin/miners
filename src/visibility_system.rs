@@ -2,6 +2,8 @@ use specs::prelude::*;
 
 use super::{Viewshed, Position, Map, Direction, util, map::TileType, Player};
 
+const BASE_LIGHT_LEVEL: f32 = 0.07;
+
 struct Quadrant {
     origin: Position,
     dir: Direction,
@@ -62,12 +64,17 @@ impl<'a> System<'a> for VisibilitySystem {
         let (mut map, entities, mut viewshed, pos, player) = data;
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
 
-            // render if game has changed
+            // update viewshed if game has changed
             if viewshed.dirty {
                 viewshed.dirty = false;
 
                 viewshed.visible_tiles.clear();
-                viewshed.visible_tiles = shadowcast(Position { x: pos.x, y: pos.y }, viewshed.range, &*map);
+                viewshed.light_levels.clear();
+
+                let shadow_data = shadowcast(Position { x: pos.x, y: pos.y }, viewshed.strength, &*map);
+                viewshed.visible_tiles = shadow_data.0;
+                viewshed.light_levels = shadow_data.1;
+
                 // remove tiles not in map
                 viewshed.visible_tiles.retain(|p| p.x >= 0 && p.x < map.width as i32 && p.y >= 0 && p.y < map.height as i32 ); // prune everything not within map bounds
 
@@ -75,12 +82,17 @@ impl<'a> System<'a> for VisibilitySystem {
                 let player: Option<&Player> = player.get(ent);
                 if let Some(_p) = player {
                     // clear visible tiles
-                    for tile in map.visible_tiles.iter_mut() { *tile = false } ;
+                    for tile in map.light_levels.iter_mut() {
 
-                    for vis in viewshed.visible_tiles.iter() {
-                        let idx = map.xy_idx(vis.x, vis.y);
-                        map.revealed_tiles[idx] = true;
-                        map.visible_tiles[idx] = true;
+                        match tile {
+                            None => *tile = None, // if tile hasn't been revealed, keep it set to none
+                            Some(_) => *tile = Some(BASE_LIGHT_LEVEL), // if it has been previously revealed, make it dark.
+                        }
+                    }
+
+                    for (i, relative_pos) in viewshed.visible_tiles.iter().enumerate() {
+                        let idx = map.xy_idx(relative_pos.x, relative_pos.y);
+                        map.light_levels[idx] = viewshed.light_levels[i];
                     }
                 }
             }
@@ -89,8 +101,9 @@ impl<'a> System<'a> for VisibilitySystem {
 }
 
 // I want to be able to reuse this algorithm for both calculating light levels and the fov for the player
-fn shadowcast(origin: Position, strength: usize, map: &Map) -> Vec<Position> {
+fn shadowcast(origin: Position, strength: usize, map: &Map) -> (Vec<Position>, Vec<Option<f32>>) {
     let mut visible_tiles: Vec<Position> = vec![origin];
+    let mut light_levels: Vec<Option<f32>> = vec![Some(1.0)];
 
     let dirs = Direction::iterator();
     for dir in dirs {
@@ -113,7 +126,10 @@ fn shadowcast(origin: Position, strength: usize, map: &Map) -> Vec<Position> {
                 let curr_tiletype = get_tiletype(&map, &Some(curr_tile), &quadrant);
 
                 if curr_tiletype == Some(TileType::Wall) || is_symmetric(&current_row, &curr_tile) {
-                    visible_tiles.push(quadrant.map_pos(&curr_tile)); // reveal
+                    // reveal
+                    visible_tiles.push(quadrant.map_pos(&curr_tile));
+                    // TODO: Fine tune light levels
+                    light_levels.push(Some(1.0 / current_row.depth as f32));
                 }
 
                 if prev_tiletype == Some(TileType::Wall) && curr_tiletype == Some(TileType::Floor) {
@@ -140,7 +156,7 @@ fn shadowcast(origin: Position, strength: usize, map: &Map) -> Vec<Position> {
         }
     }
 
-    visible_tiles
+    (visible_tiles, light_levels)
 }
 
 fn is_symmetric(row: &QuadrantRow, tile: &Position) -> bool {

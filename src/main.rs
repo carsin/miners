@@ -63,7 +63,8 @@ impl GameState for Game {
 
         for (position, entity) in (&positions, &renderables).join() {
             let idx = map.xy_idx(position.x, position.y);
-            if map.visible_tiles[idx] {
+            // TODO: change entity light levels
+            if let Some(light_level) = map.light_levels[idx] {
                 ctx.print_color(position.x, position.y, entity.fg, entity.bg, entity.glyph);
             }
         }
@@ -107,19 +108,21 @@ fn main() -> BError {
     map.generate_map_rooms_and_corridors(max_rooms, min_room_size, max_room_size);
 
     let (player_x, player_y) = map.rooms[0].center();
-    for room in map.rooms.iter().skip(1) {
-        let (x, y) = room.center();
-        game.world.create_entity()
-            .with(Position { x, y })
-            .with(Renderable {
-                glyph: 'g',
-                fg: RGB::named(RED),
-                bg: RGB::named(BLACK),
-            })
-            .with(Viewshed { visible_tiles : vec![], range: 5, dirty: true })
-            .with(Monster {})
-            .build();
-    }
+
+    // place monsters in center of each room
+    // for room in map.rooms.iter().skip(1) {
+    //     let (x, y) = room.center();
+    //     game.world.create_entity()
+    //         .with(Position { x, y })
+    //         .with(Renderable {
+    //             glyph: 'g',
+    //             fg: RGB::named(RED),
+    //             bg: RGB::named(BLACK),
+    //         })
+    //         .with(Viewshed { visible_tiles: vec![], light_levels: vec![], strength: 5, dirty: true })
+    //         .with(Monster {})
+    //         .build();
+    // }
 
     game.world.insert(map);
 
@@ -132,7 +135,7 @@ fn main() -> BError {
             bg: RGB::from_f32(0.2, 0.2, 0.2),
         })
         .with(Player {})
-        .with(Viewshed { visible_tiles : vec![], range: 8, dirty: true })
+        .with(Viewshed { visible_tiles: vec![], light_levels: vec![], strength: 8, dirty: true })
         .build();
 
     // Call into bracket_terminal to run the main loop. This handles rendering, and calls back into State's tick function every cycle. The box is needed to work around lifetime handling.
