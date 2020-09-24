@@ -59,6 +59,7 @@ impl<'a> System<'a> for VisibilitySystem {
                        ReadStorage<'a, Player>);
 
     fn run(&mut self, data : Self::SystemData) {
+        // runs for entities with viewshed & position components
         let (mut map, entities, mut viewshed, pos, player) = data;
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
 
@@ -78,7 +79,9 @@ impl<'a> System<'a> for VisibilitySystem {
                 viewshed.visible_tiles.retain(|p| p.x >= 0 && p.x < map.width as i32 && p.y >= 0 && p.y < map.height as i32 ); // prune everything not within map bounds
 
                 // TODO: Refactor
-                // I want to get light from specific origins for stuff like placing torches, not just around player
+                // This currently checks if the player is the current entity in the list
+                // and only then sets the visible tiles.
+                // I want to get light from specific origins for stuff like placing torches
                 let player: Option<&Player> = player.get(ent);
                 if let Some(_p) = player {
                     // clear visible tiles
@@ -89,8 +92,9 @@ impl<'a> System<'a> for VisibilitySystem {
                         }
                     }
 
+                    // set light levels in map
                     for (i, relative_pos) in viewshed.visible_tiles.iter().enumerate() {
-                        let idx = map.xy_idx(relative_pos.x, relative_pos.y);
+                        let idx = map.xy_idx(relative_pos.x, relative_pos.y); // converts algorithm coords to maps
                         map.light_levels[idx] = viewshed.light_levels[i];
                     }
                 }

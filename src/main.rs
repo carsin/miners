@@ -15,7 +15,7 @@ mod monster_ai_system;
 
 const GAME_WIDTH: usize = 60;
 const GAME_HEIGHT: usize = 50;
-const BASE_LIGHT_LEVEL: f32 = 0.05;
+const BASE_LIGHT_LEVEL: f32 = 0.0;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum State {

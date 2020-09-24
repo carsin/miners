@@ -20,7 +20,7 @@ pub enum TileType {
 }
 
 impl TileType {
-    fn get_data(self) -> TileData {
+    pub fn get_data(self) -> TileData {
         match self {
             TileType::Floor => {
                 TileData {
@@ -45,11 +45,11 @@ impl TileType {
 }
 
 // initialize to RGB as we convert to RGBA when rendering to get light level effect
-struct TileData {
-    glyph: char,
-    base_fg: RGB,
-    base_bg: RGB,
-    blocks_movement: bool,
+pub struct TileData {
+    pub glyph: char,
+    pub base_fg: RGB,
+    pub base_bg: RGB,
+    pub blocks_movement: bool,
 }
 
 #[derive(Debug)]
