@@ -30,10 +30,10 @@ pub fn input(game: &mut Game, ctx: &mut BTerm) -> State {
     match ctx.key {
         None => { return State::Paused }
         Some(key) => match key {
-            VirtualKeyCode::W => move_player(Direction::North, &mut game.world),
-            VirtualKeyCode::S => move_player(Direction::South, &mut game.world),
-            VirtualKeyCode::A => move_player(Direction::East, &mut game.world),
-            VirtualKeyCode::D => move_player(Direction::West, &mut game.world),
+            VirtualKeyCode::K => move_player(Direction::North, &mut game.world),
+            VirtualKeyCode::J => move_player(Direction::South, &mut game.world),
+            VirtualKeyCode::H => move_player(Direction::East, &mut game.world),
+            VirtualKeyCode::L => move_player(Direction::West, &mut game.world),
             _ => { return State::Paused }
         }
     }

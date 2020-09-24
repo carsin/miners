@@ -13,8 +13,8 @@ mod util;
 mod visibility_system;
 mod monster_ai_system;
 
-const GAME_WIDTH: usize = 80;
-const GAME_HEIGHT: usize = 60;
+const GAME_WIDTH: usize = 50;
+const GAME_HEIGHT: usize = 50;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum State {
@@ -84,6 +84,7 @@ fn main() -> BError {
         .with_font("Zilk_16x16.png", 16, 16)
         .with_title("miners")
         .with_simple_console(GAME_WIDTH, GAME_HEIGHT, "Zilk_16x16.png")
+        // .with_automatic_console_resize(true)
         .build()?;
 
     let mut game: Game = Game {
@@ -98,7 +99,12 @@ fn main() -> BError {
     game.world.register::<Monster>();
 
     let mut map = Map::new(GAME_WIDTH, GAME_HEIGHT);
-    map.generate_map_rooms_and_corridors(10, 5, 15);
+
+    let max_rooms: usize = 20;
+    let min_room_size: usize = 3;
+    let max_room_size: usize = 15;
+
+    map.generate_map_rooms_and_corridors(max_rooms, min_room_size, max_room_size);
 
     let (player_x, player_y) = map.rooms[0].center();
     for room in map.rooms.iter().skip(1) {

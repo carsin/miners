@@ -138,6 +138,7 @@ impl Map {
     pub fn render(&self, ctx: &mut BTerm) {
         let mut y = 0;
         let mut x = 0;
+        // loops through tiles & keeps track of current iteration count in idx
         for (idx, tile) in self.tiles.iter().enumerate() {
             // Render a tile depending upon the tile type
             if self.revealed_tiles[idx] {
@@ -150,10 +151,13 @@ impl Map {
                     }
                 };
 
+                // Dim if tile isn't in current viewshed
                 if !self.visible_tiles[idx] {
                     fg = RGB::from_f32(0.2, 0.2, 0.2);
                     bg = RGB::from_f32(0.0, 0.0, 0.0);
                 }
+
+                // convert to more transparent rgba based on depth
 
                 ctx.print_color(x, y, fg, bg, glyph);
             }
