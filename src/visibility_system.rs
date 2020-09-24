@@ -61,16 +61,22 @@ impl<'a> System<'a> for VisibilitySystem {
     fn run(&mut self, data : Self::SystemData) {
         let (mut map, entities, mut viewshed, pos, player) = data;
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
+
+            // render if game has changed
             if viewshed.dirty {
                 viewshed.dirty = false;
+
                 viewshed.visible_tiles.clear();
-                viewshed.visible_tiles = fov(Position { x: pos.x, y: pos.y }, viewshed.range, &*map);
+                viewshed.visible_tiles = shadowcast(Position { x: pos.x, y: pos.y }, viewshed.range, &*map);
+                // remove tiles not in map
                 viewshed.visible_tiles.retain(|p| p.x >= 0 && p.x < map.width as i32 && p.y >= 0 && p.y < map.height as i32 ); // prune everything not within map bounds
 
                 // Reveal around player
                 let player: Option<&Player> = player.get(ent);
                 if let Some(_p) = player {
+                    // clear visible tiles
                     for tile in map.visible_tiles.iter_mut() { *tile = false } ;
+
                     for vis in viewshed.visible_tiles.iter() {
                         let idx = map.xy_idx(vis.x, vis.y);
                         map.revealed_tiles[idx] = true;
@@ -82,7 +88,8 @@ impl<'a> System<'a> for VisibilitySystem {
     }
 }
 
-fn fov(origin: Position, range: usize, map: &Map) -> Vec<Position> {
+// I want to be able to reuse this algorithm for both calculating light levels and the fov for the player
+fn shadowcast(origin: Position, strength: usize, map: &Map) -> Vec<Position> {
     let mut visible_tiles: Vec<Position> = vec![origin];
 
     let dirs = Direction::iterator();
@@ -121,14 +128,13 @@ fn fov(origin: Position, range: usize, map: &Map) -> Vec<Position> {
 
                 prev_tile = Some(curr_tile);
                 prev_tiletype = get_tiletype(&map, &prev_tile, &quadrant);
-
             }
 
             if prev_tiletype == Some(TileType::Floor) {
                 rows.push(current_row.next());
             }
 
-            if current_row.depth >= range as i32 {
+            if current_row.depth >= strength as i32 {
                 break;
             }
         }

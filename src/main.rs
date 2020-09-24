@@ -13,7 +13,7 @@ mod util;
 mod visibility_system;
 mod monster_ai_system;
 
-const GAME_WIDTH: usize = 50;
+const GAME_WIDTH: usize = 60;
 const GAME_HEIGHT: usize = 50;
 
 #[derive(PartialEq, Copy, Clone)]

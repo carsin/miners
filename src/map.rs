@@ -19,6 +19,39 @@ pub enum TileType {
     Floor, Wall
 }
 
+impl TileType {
+    fn get_data(self) -> TileData {
+        match self {
+            Floor => {
+                TileData {
+                    glyph: '.',
+                    base_fg: RGB::from_f32(0.3, 0.3, 0.3),
+                    base_bg: RGB::from_f32(0.1, 0.1, 0.1),
+                    blocks_movement: false,
+                }
+            },
+
+            Wall => {
+                TileData {
+                    glyph: '#',
+                    base_fg: RGB::from_f32(0.1, 0.1, 0.1),
+                    base_bg: RGB::from_f32(0.1, 0.1, 0.1),
+                    blocks_movement: true,
+                }
+            }
+        }
+
+    }
+}
+
+// initialize to RGB as we convert to RGBA when rendering to get light level effect
+struct TileData {
+    glyph: char,
+    base_fg: RGB,
+    base_bg: RGB,
+    blocks_movement: bool,
+}
+
 #[derive(Debug)]
 pub struct Room {
     pub x1: i32,
@@ -43,8 +76,9 @@ impl Room {
 
 pub struct Map {
     pub tiles: Vec<TileType>,
-    pub revealed_tiles: Vec<bool>,
-    pub visible_tiles: Vec<bool>,
+    pub light_levels: Vec<Option<f32>>,
+    // pub revealed_tiles: Vec<bool>,
+    // pub visible_tiles: Vec<bool>,
     pub rooms: Vec<Room>,
     pub width: usize,
     pub height: usize,
@@ -54,8 +88,9 @@ impl Map {
     pub fn new(width: usize, height: usize) -> Self {
         Self {
             tiles: vec![],
-            revealed_tiles: vec![false; width * height],
-            visible_tiles: vec![false; width * height],
+            light_levels: vec![None; width * height], // initialize all tiles to none (unrevealed)
+            // revealed_tiles: vec![false; width * height],
+            // visible_tiles: vec![false; width * height],
             rooms: vec![],
             width,
             height,
@@ -140,24 +175,12 @@ impl Map {
         let mut x = 0;
         // loops through tiles & keeps track of current iteration count in idx
         for (idx, tile) in self.tiles.iter().enumerate() {
-            // Render a tile depending upon the tile type
-            if self.revealed_tiles[idx] {
-                let (glyph, mut fg, mut bg) = match tile {
-                    TileType::Floor => {
-                        ('.', RGB::from_f32(0.4, 0.4, 0.4), RGB::from_f32(0.2, 0.2, 0.2))
-                    },
-                    TileType::Wall => {
-                        ('#', RGB::from_f32(0.6, 0.6, 0.6), RGB::from_f32(0.2, 0.2, 0.2))
-                    }
-                };
 
-                // Dim if tile isn't in current viewshed
-                if !self.visible_tiles[idx] {
-                    fg = RGB::from_f32(0.2, 0.2, 0.2);
-                    bg = RGB::from_f32(0.0, 0.0, 0.0);
-                }
-
-                // convert to more transparent rgba based on depth
+            if let Some(light_value) = self.light_levels[idx] {
+                let tile_data = self.tiles[idx].get_data();
+                let fg = tile_data.base_fg.to_rgba(light_value);
+                let bg = tile_data.base_bg.to_rgba(light_value);
+                let glyph = tile_data.glyph;
 
                 ctx.print_color(x, y, fg, bg, glyph);
             }
