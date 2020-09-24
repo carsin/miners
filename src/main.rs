@@ -119,7 +119,7 @@ fn main() -> BError {
     //             fg: RGB::named(RED),
     //             bg: RGB::named(BLACK),
     //         })
-    //         .with(Viewshed { visible_tiles: vec![], light_levels: vec![], strength: 5, dirty: true })
+    //         .with(Viewshed { visible_tiles: vec![], light_levels: vec![], strength: 5.0, dirty: true })
     //         .with(Monster {})
     //         .build();
     // }
@@ -135,7 +135,7 @@ fn main() -> BError {
             bg: RGB::from_f32(0.2, 0.2, 0.2),
         })
         .with(Player {})
-        .with(Viewshed { visible_tiles: vec![], light_levels: vec![], strength: 8, dirty: true })
+        .with(Viewshed { visible_tiles: vec![], light_levels: vec![], strength: 6.0, dirty: true })
         .build();
 
     // Call into bracket_terminal to run the main loop. This handles rendering, and calls back into State's tick function every cycle. The box is needed to work around lifetime handling.

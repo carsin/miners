@@ -2,7 +2,7 @@ use specs::prelude::*;
 
 use super::{Viewshed, Position, Map, Direction, util, map::TileType, Player};
 
-const BASE_LIGHT_LEVEL: f32 = 0.1;
+const BASE_LIGHT_LEVEL: f32 = 0.05;
 
 struct Quadrant {
     origin: Position,
@@ -101,7 +101,7 @@ impl<'a> System<'a> for VisibilitySystem {
 }
 
 // I want to be able to reuse this algorithm for both calculating light levels and the fov for the player
-fn shadowcast(origin: Position, strength: usize, map: &Map) -> (Vec<Position>, Vec<Option<f32>>) {
+fn shadowcast(origin: Position, strength: f32, map: &Map) -> (Vec<Position>, Vec<Option<f32>>) {
     let mut visible_tiles: Vec<Position> = vec![origin];
     let mut light_levels: Vec<Option<f32>> = vec![Some(1.0)];
 
@@ -128,8 +128,10 @@ fn shadowcast(origin: Position, strength: usize, map: &Map) -> (Vec<Position>, V
                 if curr_tiletype == Some(TileType::Wall) || is_symmetric(&current_row, &curr_tile) {
                     // reveal
                     visible_tiles.push(quadrant.map_pos(&curr_tile));
-                    // TODO: Fine tune light levels
-                    light_levels.push(Some(BASE_LIGHT_LEVEL.max(1.0 / current_row.depth as f32)));
+                    // calculate light level
+                    let mut light_level = 1.0 - ((current_row.depth as f32 - 1.0) / strength);
+                    light_level = light_level - BASE_LIGHT_LEVEL; // smoother transition to visible
+                    light_levels.push(Some(BASE_LIGHT_LEVEL.max(light_level))); // ensures light level is higher than base light
                 }
 
                 if prev_tiletype == Some(TileType::Wall) && curr_tiletype == Some(TileType::Floor) {
