@@ -15,14 +15,13 @@ mod monster_ai_system;
 
 const GAME_WIDTH: usize = 60;
 const GAME_HEIGHT: usize = 50;
-const BASE_LIGHT_LEVEL: f32 = 0.0;
+const BASE_LIGHT_LEVEL: f32 = 0.05;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum State {
     Paused,
     Running
 }
-
 
 pub struct Game {
     pub world: World,
@@ -74,9 +73,7 @@ impl GameState for Game {
                 }
             }
         }
-
-        // Render FPS
-        ctx.print_centered(0, &format!("{} fps", ctx.fps as u32));
+        ctx.print_color(0, 0, RGB::named(WHITE), RGB::named(BLACK), &format!("{} fps", ctx.fps as u32)); // Render FPS
     }
 }
 
@@ -113,7 +110,18 @@ fn main() -> BError {
 
     map.generate_map_rooms_and_corridors(max_rooms, min_room_size, max_room_size);
 
+    // Create player
     let (player_x, player_y) = map.rooms[0].center();
+    game.world.create_entity()
+        .with(Position { x: player_x, y: player_y })
+        .with(Renderable {
+            glyph: '☺',
+            fg: RGB::from_f32(0.0, 1.0, 1.0),
+            bg: RGB::from_f32(0.2, 0.2, 0.2),
+        })
+        .with(Player {})
+        .with(Viewshed { visible_tiles: vec![], emits_light: true, strength: 6.0, dirty: true })
+        .build();
 
     // place monsters in center of each room
     for room in map.rooms.iter().skip(1) {
@@ -125,24 +133,12 @@ fn main() -> BError {
                 fg: RGB::named(RED),
                 bg: RGB::named(BLACK),
             })
-            .with(Viewshed { visible_tiles: vec![], light_levels: vec![], strength: 5.0, dirty: true })
+            .with(Viewshed { visible_tiles: vec![], emits_light: true, strength: 5.0, dirty: true })
             .with(Monster {})
             .build();
     }
 
     game.world.insert(map);
-
-    // Create player
-    game.world.create_entity()
-        .with(Position { x: player_x, y: player_y })
-        .with(Renderable {
-            glyph: '☺',
-            fg: RGB::from_f32(0.0, 1.0, 1.0),
-            bg: RGB::from_f32(0.2, 0.2, 0.2),
-        })
-        .with(Player {})
-        .with(Viewshed { visible_tiles: vec![], light_levels: vec![], strength: 6.0, dirty: true })
-        .build();
 
     // Call into bracket_terminal to run the main loop. This handles rendering, and calls back into State's tick function every cycle. The box is needed to work around lifetime handling.
     main_loop(context, game)
