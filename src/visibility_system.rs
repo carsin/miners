@@ -64,9 +64,12 @@ impl<'a> System<'a> for VisibilitySystem {
             // update viewshed if game has changed
             if viewshed.dirty {
                 viewshed.dirty = false;
+                // BUG: viewsheds overwrite each other, so when they're not redrawn the light dissappears
+                // Could just fix by changing when the viewshed get dirty
+                // how to determine when to get dirty?
+                // maybe not
                 // Before clearing the viewshed's tiles, loop through this entity's previous iteration
                 // of this system and only update the map's light array at those positions.
-                // BUG: viewsheds overwrite each other, so when they're not redrawn the light dissappears
                 for pos in viewshed.visible_tiles.iter() {
                     let idx = map.xy_idx(pos.x, pos.y);
                     map.light_levels[idx] = match map.light_levels[idx] {
@@ -131,7 +134,7 @@ fn shadowcast(origin: Position, range: f32, emitter: Option<f32>, map: &Map) -> 
                     if let Some(max_strength) = emitter {
                         // calculate light level
                         let light_level = max_strength - ((current_row.depth as f32 - 1.0) * max_strength) / range;
-                        println!("{}", light_level);
+                        // println!("{}", light_level);
                         light_levels.push(Some(BASE_LIGHT_LEVEL.max(light_level))); // ensures light level is higher than base light
                     }
                 }

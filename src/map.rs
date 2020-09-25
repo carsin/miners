@@ -26,7 +26,7 @@ impl TileType {
                 TileData {
                     glyph: '.',
                     base_fg: RGB::from_f32(0.3, 0.3, 0.3),
-                    base_bg: RGB::from_f32(0.0, 0.0, 0.0),
+                    base_bg: RGB::from_f32(0.1, 0.1, 0.1),
                     blocks_movement: false,
                 }
             },
@@ -35,7 +35,7 @@ impl TileType {
                 TileData {
                     glyph: '#',
                     base_fg: RGB::from_f32(0.2, 0.2, 0.2),
-                    base_bg: RGB::from_f32(0.0, 0.0, 0.0),
+                    base_bg: RGB::from_f32(0.1, 0.1, 0.1),
                     blocks_movement: true,
                 }
             }
