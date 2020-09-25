@@ -1,6 +1,6 @@
 use specs::{WorldExt, World, prelude::*};
 use bracket_terminal::prelude::*;
-use super::{Direction, Player, Position, map, Map, util, Viewshed, Game, State};
+use super::{Direction, Player, Position, Map, util, Viewshed, Game, State};
 
 pub fn move_player(dir: Direction, world: &mut World) {
     let mut positions = world.write_storage::<Position>();
@@ -21,6 +21,9 @@ pub fn move_player(dir: Direction, world: &mut World) {
             pos.x = util::clamp(pos.x + delta_x, 0, (map.width - 1) as i32);
             pos.y = util::clamp(pos.y + delta_y, 0, (map.height - 1) as i32);
         }
+        // updates viewshed even if move doesn't actually happen
+        // this fixes a weird bug that breaks the viewshed if the player attempts
+        // to walk into a wall. is that bug in here or somewhere else?
         viewshed.dirty = true;
     }
 }

@@ -21,18 +21,13 @@ pub struct Renderable {
 pub struct Player {}
 
 // generates lists of tiles visible from position and their light levels.
-// I need to seperate these functionalities somehow
-// FOV & light?
-//
-// if I do seperate them, it means the shadowcast function will run twice
-// effectively making it twice as slow in an avoidable scenario
-// how can I keep these from running twice?
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
 pub struct Viewshed {
     pub visible_tiles: Vec<Position>, // positions relative to algorithm that are visible
-    pub emits_light: bool,
-    pub range: f32, // affects how far light extends from source & light level dropoff rate from origin
+    pub emitter: Option<f32>, // determines if entity emits light, and if so the maximum strength of 1.0 to 0.0
+    pub range: f32, // changes how deep the shadowcasting algorithm goes. affects fov viewrange & lightshed
+    // pub max_strength: f32, // changes the light level at the source and thus how gradual the light shift is
     pub dirty: bool, // has game changed (player moved)?
 }
 

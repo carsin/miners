@@ -15,7 +15,7 @@ mod monster_ai_system;
 
 const GAME_WIDTH: usize = 60;
 const GAME_HEIGHT: usize = 50;
-const BASE_LIGHT_LEVEL: f32 = 0.05;
+const BASE_LIGHT_LEVEL: f32 = 0.0;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum State {
@@ -105,8 +105,8 @@ fn main() -> BError {
     let mut map = Map::new(GAME_WIDTH, GAME_HEIGHT);
 
     let max_rooms: usize = 20;
-    let min_room_size: usize = 3;
-    let max_room_size: usize = 15;
+    let min_room_size: usize = 5;
+    let max_room_size: usize = 10;
 
     map.generate_map_rooms_and_corridors(max_rooms, min_room_size, max_room_size);
 
@@ -116,11 +116,11 @@ fn main() -> BError {
         .with(Position { x: player_x, y: player_y })
         .with(Renderable {
             glyph: '☺',
-            fg: RGB::from_f32(0.0, 1.0, 1.0),
-            bg: RGB::from_f32(0.2, 0.2, 0.2),
+            fg: RGB::from_f32(0.05, 0.6, 0.3),
+            bg: RGB::from_f32(0.1, 0.1, 0.1),
         })
         .with(Player {})
-        .with(Viewshed { visible_tiles: vec![], emits_light: true, range: 6.0, dirty: true })
+        .with(Viewshed { visible_tiles: vec![], emitter: Some(1.0), range: 5.0, dirty: true })
         .build();
 
     // place monsters in center of each room
@@ -130,10 +130,10 @@ fn main() -> BError {
             .with(Position { x, y })
             .with(Renderable {
                 glyph: 'g',
-                fg: RGB::named(RED),
-                bg: RGB::named(BLACK),
+                fg: RGB::from_f32(1.0, 0.1, 0.1),
+                bg: RGB::from_f32(0.1, 0.1, 0.1),
             })
-            .with(Viewshed { visible_tiles: vec![], emits_light: false, range: 5.0, dirty: true })
+            .with(Viewshed { visible_tiles: vec![], emitter: None, range: 3.0, dirty: true })
             .with(Monster {})
             .build();
     }

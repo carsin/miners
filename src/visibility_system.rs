@@ -79,13 +79,13 @@ impl<'a> System<'a> for VisibilitySystem {
                 viewshed.dirty = false;
                 viewshed.visible_tiles.clear();
 
-                let mut shadow_data = shadowcast(Position { x: position.x, y: position.y }, viewshed.range, &*map);
+                let mut shadow_data = shadowcast(Position { x: position.x, y: position.y }, viewshed.range, viewshed.emitter, &*map);
                 shadow_data.0.retain(|p| p.x >= 0 && p.x < map.width as i32 && p.y >= 0 && p.y < map.height as i32 ); // prune everything not within map bounds
                 viewshed.visible_tiles = shadow_data.0; // store entities visible tiles (useful for FOV)
                 let light_levels = shadow_data.1; // store light levels based on the depth (unused if entity isn't an emitter)
 
                 // set light levels in map
-                if viewshed.emits_light {
+                if let Some(_) = viewshed.emitter {
                     for (i, relative_pos) in viewshed.visible_tiles.iter().enumerate() {
                         let idx = map.xy_idx(relative_pos.x, relative_pos.y); // converts algorithm coords to maps
                         map.light_levels[idx] = light_levels[i];
@@ -96,19 +96,24 @@ impl<'a> System<'a> for VisibilitySystem {
     }
 }
 
+// TODO: strength parameter
+
 // returns two lists:
 // one of the positions of all visible tiles from origin,
 // and another of those position's light levels (based on algorithm row depth)
-// I should seperate these
-fn shadowcast(origin: Position, range: f32, map: &Map) -> (Vec<Position>, Vec<Option<f32>>) {
+fn shadowcast(origin: Position, range: f32, emitter: Option<f32>, map: &Map) -> (Vec<Position>, Vec<Option<f32>>) {
     let mut visible_tiles: Vec<Position> = vec![origin];
-    let mut light_levels: Vec<Option<f32>> = vec![Some(1.0)];
+    let mut light_levels: Vec<Option<f32>> = vec![];
+
+    // initialize light_levels vector only if this is being called by an emitter
+    if let Some(max_strength) = emitter {
+        light_levels.push(Some(max_strength));
+    }
 
     // iterates through all 4 directions (NESW)
     let dirs = Direction::iterator();
     for dir in dirs {
         let quadrant = Quadrant { origin, dir };
-
         let first_row = QuadrantRow {
             depth: 1,
             start_slope: -1.0,
@@ -128,9 +133,13 @@ fn shadowcast(origin: Position, range: f32, map: &Map) -> (Vec<Position>, Vec<Op
                 if curr_tiletype == Some(TileType::Wall) || is_symmetric(&current_row, &curr_tile) {
                     // Add to visible tiles
                     visible_tiles.push(quadrant.map_pos(&curr_tile));
-                    // calculate light level
-                    let light_level = 1.0 - ((current_row.depth as f32 - 1.0) / range) - BASE_LIGHT_LEVEL;
-                    light_levels.push(Some(BASE_LIGHT_LEVEL.max(light_level))); // ensures light level is higher than base light
+                    // if an emitter, change light_levels
+                    if let Some(max_strength) = emitter {
+                        // calculate light level
+                        let light_level = max_strength - ((current_row.depth as f32 - 1.0) * max_strength) / range;
+                        println!("{}", light_level);
+                        light_levels.push(Some(BASE_LIGHT_LEVEL.max(light_level))); // ensures light level is higher than base light
+                    }
                 }
 
                 if prev_tiletype == Some(TileType::Wall) && curr_tiletype == Some(TileType::Floor) {
@@ -142,7 +151,6 @@ fn shadowcast(origin: Position, range: f32, map: &Map) -> (Vec<Position>, Vec<Op
                     next_row.end_slope = slope(curr_tile);
                     rows.push(next_row);
                 }
-
                 prev_tile = Some(curr_tile);
                 prev_tiletype = get_tiletype(&map, &prev_tile, &quadrant);
             }
