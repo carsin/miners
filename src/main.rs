@@ -120,7 +120,7 @@ fn main() -> BError {
             bg: RGB::from_f32(0.2, 0.2, 0.2),
         })
         .with(Player {})
-        .with(Viewshed { visible_tiles: vec![], emits_light: true, strength: 6.0, dirty: true })
+        .with(Viewshed { visible_tiles: vec![], emits_light: true, range: 6.0, dirty: true })
         .build();
 
     // place monsters in center of each room
@@ -133,7 +133,7 @@ fn main() -> BError {
                 fg: RGB::named(RED),
                 bg: RGB::named(BLACK),
             })
-            .with(Viewshed { visible_tiles: vec![], emits_light: true, strength: 5.0, dirty: true })
+            .with(Viewshed { visible_tiles: vec![], emits_light: false, range: 5.0, dirty: true })
             .with(Monster {})
             .build();
     }

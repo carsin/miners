@@ -31,9 +31,8 @@ pub struct Player {}
 #[storage(VecStorage)]
 pub struct Viewshed {
     pub visible_tiles: Vec<Position>, // positions relative to algorithm that are visible
-    // pub light_levels: Vec<Option<f32>>, // light levels for visible tiles
     pub emits_light: bool,
-    pub strength: f32, // affects how far light extends from source & light level dropoff rate from origin
+    pub range: f32, // affects how far light extends from source & light level dropoff rate from origin
     pub dirty: bool, // has game changed (player moved)?
 }
 

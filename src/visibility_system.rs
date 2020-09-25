@@ -76,11 +76,10 @@ impl<'a> System<'a> for VisibilitySystem {
         for (_entity, viewshed, position) in (&entities, &mut viewshed, &position).join() {
             // update viewshed if game has changed
             if viewshed.dirty {
-
                 viewshed.dirty = false;
                 viewshed.visible_tiles.clear();
 
-                let mut shadow_data = shadowcast(Position { x: position.x, y: position.y }, viewshed.strength, &*map);
+                let mut shadow_data = shadowcast(Position { x: position.x, y: position.y }, viewshed.range, &*map);
                 shadow_data.0.retain(|p| p.x >= 0 && p.x < map.width as i32 && p.y >= 0 && p.y < map.height as i32 ); // prune everything not within map bounds
                 viewshed.visible_tiles = shadow_data.0; // store entities visible tiles (useful for FOV)
                 let light_levels = shadow_data.1; // store light levels based on the depth (unused if entity isn't an emitter)
@@ -101,7 +100,7 @@ impl<'a> System<'a> for VisibilitySystem {
 // one of the positions of all visible tiles from origin,
 // and another of those position's light levels (based on algorithm row depth)
 // I should seperate these
-fn shadowcast(origin: Position, strength: f32, map: &Map) -> (Vec<Position>, Vec<Option<f32>>) {
+fn shadowcast(origin: Position, range: f32, map: &Map) -> (Vec<Position>, Vec<Option<f32>>) {
     let mut visible_tiles: Vec<Position> = vec![origin];
     let mut light_levels: Vec<Option<f32>> = vec![Some(1.0)];
 
@@ -130,7 +129,7 @@ fn shadowcast(origin: Position, strength: f32, map: &Map) -> (Vec<Position>, Vec
                     // Add to visible tiles
                     visible_tiles.push(quadrant.map_pos(&curr_tile));
                     // calculate light level
-                    let light_level = 1.0 - ((current_row.depth as f32 - 1.0) / strength) - BASE_LIGHT_LEVEL;
+                    let light_level = 1.0 - ((current_row.depth as f32 - 1.0) / range) - BASE_LIGHT_LEVEL;
                     light_levels.push(Some(BASE_LIGHT_LEVEL.max(light_level))); // ensures light level is higher than base light
                 }
 
@@ -152,7 +151,7 @@ fn shadowcast(origin: Position, strength: f32, map: &Map) -> (Vec<Position>, Vec
                 rows.push(current_row.next());
             }
 
-            if current_row.depth >= strength as i32 {
+            if current_row.depth >= range as i32 {
                 break;
             }
         }
