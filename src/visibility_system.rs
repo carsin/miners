@@ -58,27 +58,24 @@ impl<'a> System<'a> for VisibilitySystem {
                        WriteStorage<'a, Position>);
 
     // runs for entities with viewshed & position components
-    fn run(&mut self, data : Self::SystemData) {
+    fn run(&mut self, data: Self::SystemData) {
         let (mut map, entities, mut viewshed, position) = data;
-
-        // reset map light levels
-        // currently this runs everytime the system runs, which is currently fine
-        // since the player moving is the only time the system is updated, but this will need to be changed
-        // store some sort of boolean in map instead of in each entity?
-        // but when entities need to recalculate they need to keep track of their dirtiness as well to be efficient
-        for tile in map.light_levels.iter_mut() {
-            match tile {
-                None => *tile = None, // if tile hasn't been revealed, keep it set to none
-                Some(_) => *tile = Some(BASE_LIGHT_LEVEL), // if it has been previously revealed, make it dark.
-            }
-        }
-
         for (_entity, viewshed, position) in (&entities, &mut viewshed, &position).join() {
             // update viewshed if game has changed
             if viewshed.dirty {
                 viewshed.dirty = false;
-                viewshed.visible_tiles.clear();
+                // Before clearing the viewshed's tiles, loop through this entity's previous iteration
+                // of this system and only update the map's light array at those positions.
+                // BUG: viewsheds overwrite each other, so when they're not redrawn the light dissappears
+                for pos in viewshed.visible_tiles.iter() {
+                    let idx = map.xy_idx(pos.x, pos.y);
+                    map.light_levels[idx] = match map.light_levels[idx] {
+                        None => None, // if tile hasn't been revealed, keep it set to none
+                        Some(_) => Some(BASE_LIGHT_LEVEL), // if it has been previously revealed, make it dark.
+                    };
+                }
 
+                viewshed.visible_tiles.clear();
                 let mut shadow_data = shadowcast(Position { x: position.x, y: position.y }, viewshed.range, viewshed.emitter, &*map);
                 shadow_data.0.retain(|p| p.x >= 0 && p.x < map.width as i32 && p.y >= 0 && p.y < map.height as i32 ); // prune everything not within map bounds
                 viewshed.visible_tiles = shadow_data.0; // store entities visible tiles (useful for FOV)
@@ -86,8 +83,8 @@ impl<'a> System<'a> for VisibilitySystem {
 
                 // set light levels in map
                 if let Some(_) = viewshed.emitter {
-                    for (i, relative_pos) in viewshed.visible_tiles.iter().enumerate() {
-                        let idx = map.xy_idx(relative_pos.x, relative_pos.y); // converts algorithm coords to maps
+                    for (i, map_pos) in viewshed.visible_tiles.iter().enumerate() {
+                        let idx = map.xy_idx(map_pos.x, map_pos.y); // converts algorithm coords to maps
                         map.light_levels[idx] = light_levels[i];
                     }
                 }
@@ -96,8 +93,6 @@ impl<'a> System<'a> for VisibilitySystem {
     }
 }
 
-// TODO: strength parameter
-
 // returns two lists:
 // one of the positions of all visible tiles from origin,
 // and another of those position's light levels (based on algorithm row depth)
@@ -105,7 +100,6 @@ fn shadowcast(origin: Position, range: f32, emitter: Option<f32>, map: &Map) -> 
     let mut visible_tiles: Vec<Position> = vec![origin];
     let mut light_levels: Vec<Option<f32>> = vec![];
 
-    // initialize light_levels vector only if this is being called by an emitter
     if let Some(max_strength) = emitter {
         light_levels.push(Some(max_strength));
     }
