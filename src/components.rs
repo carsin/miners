@@ -20,6 +20,9 @@ pub struct Renderable {
 #[storage(VecStorage)]
 pub struct Player {}
 
+// generates lists of tiles visible from position and their light levels.
+// I need to seperate these functionalities somehow
+// FOV & light?
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
 pub struct Viewshed {

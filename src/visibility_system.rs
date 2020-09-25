@@ -62,7 +62,6 @@ impl<'a> System<'a> for VisibilitySystem {
         // runs for entities with viewshed & position components
         let (mut map, entities, mut viewshed, pos, player) = data;
         for (ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
-
             // update viewshed if game has changed
             if viewshed.dirty {
                 viewshed.dirty = false;
@@ -103,11 +102,15 @@ impl<'a> System<'a> for VisibilitySystem {
     }
 }
 
-// I want to be able to reuse this algorithm for both calculating light levels and the fov for the player
+// returns two lists:
+// one of the positions of all visible tiles from origin,
+// and another of those position's light levels (based on algorithm row depth)
+// I should seperate these
 fn shadowcast(origin: Position, strength: f32, map: &Map) -> (Vec<Position>, Vec<Option<f32>>) {
     let mut visible_tiles: Vec<Position> = vec![origin];
     let mut light_levels: Vec<Option<f32>> = vec![Some(1.0)];
 
+    // iterates through all 4 directions (NESW)
     let dirs = Direction::iterator();
     for dir in dirs {
         let quadrant = Quadrant { origin, dir };
@@ -121,6 +124,7 @@ fn shadowcast(origin: Position, strength: f32, map: &Map) -> (Vec<Position>, Vec
         let mut rows = vec![first_row];
         while !rows.is_empty() {
             let mut current_row = rows.pop().unwrap();
+
             let mut prev_tile: Option<Position> = None;
             let mut prev_tiletype: Option<TileType> = None;
 
@@ -129,7 +133,7 @@ fn shadowcast(origin: Position, strength: f32, map: &Map) -> (Vec<Position>, Vec
                 let curr_tiletype = get_tiletype(&map, &Some(curr_tile), &quadrant);
 
                 if curr_tiletype == Some(TileType::Wall) || is_symmetric(&current_row, &curr_tile) {
-                    // reveal
+                    // Add to visible tiles
                     visible_tiles.push(quadrant.map_pos(&curr_tile));
                     // calculate light level
                     let mut light_level = 1.0 - ((current_row.depth as f32 - 1.0) / strength);
