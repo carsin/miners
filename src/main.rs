@@ -15,7 +15,7 @@ mod monster_ai_system;
 
 const GAME_WIDTH: usize = 60;
 const GAME_HEIGHT: usize = 50;
-const BASE_LIGHT_LEVEL: f32 = 0.1;
+const BASE_LIGHT_LEVEL: f32 = 0.0;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum State {
@@ -104,7 +104,7 @@ fn main() -> BError {
 
     let mut map = Map::new(GAME_WIDTH, GAME_HEIGHT);
 
-    let max_rooms: usize = 20;
+    let max_rooms: usize = 50;
     let min_room_size: usize = 5;
     let max_room_size: usize = 10;
 
@@ -116,11 +116,11 @@ fn main() -> BError {
         .with(Position { x: player_x, y: player_y })
         .with(Renderable {
             glyph: '☺',
-            fg: RGB::from_f32(0.0, 0.8, 0.3),
+            fg: RGB::from_f32(0.9, 0.9, 0.9),
             bg: RGB::from_f32(0.1, 0.1, 0.1),
         })
         .with(Player {})
-        .with(Viewshed { visible_tiles: vec![], emitter: Some(1.0), range: 5.0, dirty: true })
+        .with(Viewshed { visible_tiles: vec![], emitter: Some(1.0), range: 8.0, dirty: true })
         .build();
 
     // place torches in center of each room
@@ -133,7 +133,7 @@ fn main() -> BError {
                 fg: RGB::from_f32(1.0, 0.6, 0.0),
                 bg: RGB::from_f32(0.1, 0.1, 0.1),
             })
-            .with(Viewshed { visible_tiles: vec![], emitter: Some(0.8), range: 3.0, dirty: true })
+            .with(Viewshed { visible_tiles: vec![], emitter: Some(0.7), range: 5.0, dirty: true })
             .with(Monster {})
             .build();
     }

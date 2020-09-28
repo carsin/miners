@@ -170,8 +170,8 @@ impl Map {
         let mut y = 0;
         let mut x = 0;
         // loops through tiles & keeps track of current iteration count in idx
-        for (idx, tile) in self.tiles.iter().enumerate() {
-
+        for (idx, _tile) in self.tiles.iter().enumerate() {
+            // render tile if it has been initialized (revealed previously)
             if let Some(light_value) = self.light_levels[idx] {
                 let tile_data = self.tiles[idx].get_data();
                 let fg = tile_data.base_fg.to_rgba(light_value);

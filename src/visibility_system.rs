@@ -88,6 +88,11 @@ impl<'a> System<'a> for VisibilitySystem {
                 if let Some(_) = viewshed.emitter {
                     for (i, map_pos) in viewshed.visible_tiles.iter().enumerate() {
                         let idx = map.xy_idx(map_pos.x, map_pos.y); // converts algorithm coords to maps
+                        // 9-27-2020: Potential bug fix, instead of clearing everything and then setting values
+                        // we could perform a calculation between the previous value and the new calculated value
+                        // then check what positions that were calculated in the previous iteration that
+                        // weren't recalculated in this iteration
+                          
                         map.light_levels[idx] = light_levels[i];
                     }
                 }
