@@ -70,13 +70,13 @@ impl<'a> System<'a> for VisibilitySystem {
                 // maybe not
                 // Before clearing the viewshed's tiles, loop through this entity's previous iteration
                 // of this system and only update the map's light array at those positions.
-                for pos in viewshed.visible_tiles.iter() {
-                    let idx = map.xy_idx(pos.x, pos.y);
-                    map.light_levels[idx] = match map.light_levels[idx] {
-                        None => None, // if tile hasn't been revealed, keep it set to none
-                        Some(_) => Some(BASE_LIGHT_LEVEL), // if it has been previously revealed, make it dark.
-                    };
-                }
+                // for pos in viewshed.visible_tiles.iter() {
+                //     let idx = map.xy_idx(pos.x, pos.y);
+                //     map.light_levels[idx] = match map.light_levels[idx] {
+                //         None => None, // if tile hasn't been revealed, keep it set to none
+                //         Some(_) => Some(BASE_LIGHT_LEVEL), // if it has been previously revealed, make it dark.
+                //     };
+                // }
 
                 viewshed.visible_tiles.clear();
                 let mut shadow_data = shadowcast(Position { x: position.x, y: position.y }, viewshed.range, viewshed.emitter, &*map);
@@ -92,8 +92,7 @@ impl<'a> System<'a> for VisibilitySystem {
                         // we could perform a calculation between the previous value and the new calculated value
                         // then check what positions that were calculated in the previous iteration that
                         // weren't recalculated in this iteration
-                          
-                        map.light_levels[idx] = light_levels[i];
+                        map.light_levels[idx] = Some(light_levels[i].unwrap_or(0.0).max(map.light_levels[idx].unwrap_or(0.0)));
                     }
                 }
             }
