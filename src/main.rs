@@ -133,7 +133,7 @@ fn main() -> BError {
                 fg: RGB::from_f32(1.0, 0.6, 0.0),
                 bg: RGB::from_f32(0.1, 0.1, 0.1),
             })
-            .with(Viewshed { visible_tiles: vec![], emitter: Some(0.7), range: 5.0, dirty: true })
+            .with(Viewshed { visible_tiles: vec![], emitter: None, range: 5.0, dirty: true })
             .with(Monster {})
             .build();
     }
