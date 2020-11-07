@@ -66,6 +66,7 @@ impl<'a> System<'a> for VisibilitySystem {
                 let old_visible_tiles = &viewshed.visible_tiles;
                 let old_light_levels = &viewshed.light_levels;
                 viewshed.dirty = false;
+
                 // Before clearing the viewshed's tiles, loop through this entity's previous iteration
                 // of this system and only update the map's light array at those positions.
                 for (i, pos) in old_visible_tiles.iter().enumerate() {
@@ -76,7 +77,6 @@ impl<'a> System<'a> for VisibilitySystem {
                     };
                 }
 
-                viewshed.visible_tiles.clear();
                 let mut shadow_data = shadowcast(Position { x: position.x, y: position.y }, viewshed.range, viewshed.emitter, &*map);
                 shadow_data.0.retain(|p| p.x >= 0 && p.x < map.width as i32 && p.y >= 0 && p.y < map.height as i32 ); // prune everything not within map bounds
                 viewshed.visible_tiles = shadow_data.0; // store entities visible tiles (useful for FOV)

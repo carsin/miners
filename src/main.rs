@@ -141,7 +141,7 @@ fn main() -> BError {
     for room in map.rooms.iter().skip(1) {
         let (x, y) = room.center();
         game.world.create_entity()
-            .with(Position { x: x - 1, y })
+            .with(Position { x: x - 2, y: y + 2 })
             .with(Renderable {
                 glyph: 'i',
                 fg: RGB::from_f32(1.0, 0.6, 0.0),
