@@ -120,7 +120,7 @@ fn main() -> BError {
             bg: RGB::from_f32(0.1, 0.1, 0.1),
         })
         .with(Player {})
-        .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(1.0), range: 5.0, dirty: true })
+        .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(1.0), range: 8.0, dirty: true })
         .build();
 
     // place torches in center of each room

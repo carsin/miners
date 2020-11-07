@@ -63,17 +63,14 @@ impl<'a> System<'a> for VisibilitySystem {
         for (_entity, viewshed, position) in (&entities, &mut viewshed, &position).join() {
             // update viewshed if game has changed
             if viewshed.dirty {
-                let old_visible_tiles = &viewshed.visible_tiles;
-                let old_light_levels = &viewshed.light_levels;
                 viewshed.dirty = false;
-
                 // Before clearing the viewshed's tiles, loop through this entity's previous iteration
                 // of this system and only update the map's light array at those positions.
-                for (i, pos) in old_visible_tiles.iter().enumerate() {
+                for (i, pos) in viewshed.visible_tiles.iter().enumerate() {
                     let idx = map.xy_idx(pos.x, pos.y);
                     map.light_levels[idx] = match map.light_levels[idx] {
                         None => None, // if tile hasn't been revealed, keep it set to none
-                        Some(level) => Some(level - old_light_levels[i].unwrap_or(0.0)), // remove previous light level
+                        Some(level) => Some(level - viewshed.light_levels[i].unwrap_or(0.0)), // remove previous light level
                     };
                 }
 
