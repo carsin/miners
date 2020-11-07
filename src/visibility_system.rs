@@ -87,8 +87,7 @@ impl<'a> System<'a> for VisibilitySystem {
                     for (i, map_pos) in viewshed.visible_tiles.iter().enumerate() {
                         let idx = map.xy_idx(map_pos.x, map_pos.y); // converts algorithm coords to maps
                         // Add light level to global light map
-                        // BUG: Weirdness
-                        map.light_levels[idx] = Some(viewshed.light_levels[i].unwrap_or(0.0) + map.light_levels[idx].unwrap_or(0.0));
+                        map.light_levels[idx] = Some((viewshed.light_levels[i].unwrap_or(0.0) + map.light_levels[idx].unwrap_or(0.0)).min(1.0));
                     }
                 }
             }
@@ -103,6 +102,7 @@ fn shadowcast(origin: Position, range: f32, emitter: Option<f32>, map: &Map) -> 
     let mut visible_tiles: Vec<Position> = vec![origin];
     let mut light_levels: Vec<Option<f32>> = vec![];
 
+    // light up origin tile as bright as max_strength
     if let Some(max_strength) = emitter {
         light_levels.push(Some(max_strength));
     }
@@ -128,14 +128,15 @@ fn shadowcast(origin: Position, range: f32, emitter: Option<f32>, map: &Map) -> 
                 let curr_tiletype = get_tiletype(&map, &Some(curr_tile), &quadrant);
 
                 if curr_tiletype == Some(TileType::Wall) || is_symmetric(&current_row, &curr_tile) {
-                    // Add to visible tiles
-                    visible_tiles.push(quadrant.map_pos(&curr_tile));
-                    // if an emitter, change light_levels
-                    if let Some(max_strength) = emitter {
-                        // calculate light level
-                        let light_level = max_strength - ((current_row.depth as f32 - 1.0) * max_strength) / range;
-                        // println!("{}", light_level);
-                        light_levels.push(Some(BASE_LIGHT_LEVEL.max(light_level))); // ensures light level is higher than base light
+                    if !visible_tiles.contains(&quadrant.map_pos(&curr_tile)) {
+                        // Add to visible tiles
+                        visible_tiles.push(quadrant.map_pos(&curr_tile));
+                        // if an emitter, change light_levels
+                        if let Some(max_strength) = emitter {
+                            // calculate light level
+                            let light_level = max_strength - ((current_row.depth as f32 - 1.0) * max_strength) / range;
+                            light_levels.push(Some(BASE_LIGHT_LEVEL.max(light_level))); // ensures light level is higher than base light
+                        }
                     }
                 }
 

@@ -120,7 +120,7 @@ fn main() -> BError {
             bg: RGB::from_f32(0.1, 0.1, 0.1),
         })
         .with(Player {})
-        .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(1.0), range: 8.0, dirty: true })
+        .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(1.0), range: 5.0, dirty: true })
         .build();
 
     // place torches in center of each room
@@ -141,7 +141,7 @@ fn main() -> BError {
     for room in map.rooms.iter().skip(1) {
         let (x, y) = room.center();
         game.world.create_entity()
-            .with(Position { x, y })
+            .with(Position { x: x - 1, y })
             .with(Renderable {
                 glyph: 'i',
                 fg: RGB::from_f32(1.0, 0.6, 0.0),
