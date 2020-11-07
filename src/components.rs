@@ -25,6 +25,7 @@ pub struct Player {}
 #[storage(VecStorage)]
 pub struct Viewshed {
     pub visible_tiles: Vec<Position>, // positions relative to algorithm that are visible
+    pub light_levels: Vec<Option<f32>>, // light levels
     pub emitter: Option<f32>, // determines if entity emits light, and if so the maximum strength of 1.0 to 0.0
     pub range: f32, // changes how deep the shadowcasting algorithm goes. affects fov viewrange & lightshed
     // pub max_strength: f32, // changes the light level at the source and thus how gradual the light shift is

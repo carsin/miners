@@ -63,18 +63,16 @@ impl<'a> System<'a> for VisibilitySystem {
         for (_entity, viewshed, position) in (&entities, &mut viewshed, &position).join() {
             // update viewshed if game has changed
             if viewshed.dirty {
+                let old_visible_tiles = &viewshed.visible_tiles;
+                let old_light_levels = &viewshed.light_levels;
                 viewshed.dirty = false;
-                // BUG: viewsheds overwrite each other, so when they're not redrawn the light dissappears
-                // Could just fix by changing when the viewshed get dirty
-                // how to determine when to get dirty?
-                // maybe not
                 // Before clearing the viewshed's tiles, loop through this entity's previous iteration
                 // of this system and only update the map's light array at those positions.
-                for pos in viewshed.visible_tiles.iter() {
+                for (i, pos) in old_visible_tiles.iter().enumerate() {
                     let idx = map.xy_idx(pos.x, pos.y);
                     map.light_levels[idx] = match map.light_levels[idx] {
                         None => None, // if tile hasn't been revealed, keep it set to none
-                        Some(_) => Some(BASE_LIGHT_LEVEL), // if it has been previously revealed, make it dark.
+                        Some(level) => Some(level - old_light_levels[i].unwrap_or(0.0)), // remove previous light level
                     };
                 }
 
@@ -82,18 +80,15 @@ impl<'a> System<'a> for VisibilitySystem {
                 let mut shadow_data = shadowcast(Position { x: position.x, y: position.y }, viewshed.range, viewshed.emitter, &*map);
                 shadow_data.0.retain(|p| p.x >= 0 && p.x < map.width as i32 && p.y >= 0 && p.y < map.height as i32 ); // prune everything not within map bounds
                 viewshed.visible_tiles = shadow_data.0; // store entities visible tiles (useful for FOV)
-                let light_levels = shadow_data.1; // store light levels based on the depth (unused if entity isn't an emitter)
+                viewshed.light_levels = shadow_data.1; // store light levels based on the depth (unused if entity isn't an emitter)
 
                 // set light levels in map
                 if let Some(_) = viewshed.emitter {
                     for (i, map_pos) in viewshed.visible_tiles.iter().enumerate() {
                         let idx = map.xy_idx(map_pos.x, map_pos.y); // converts algorithm coords to maps
-                        // 9-27-2020: Potential bug fix, instead of clearing everything and then setting values
-                        // we could perform a calculation between the previous value and the new calculated value
-                        // then check what positions that were calculated in the previous iteration that
-                        // weren't recalculated in this iteration
-                          
-                        map.light_levels[idx] = light_levels[i];
+                        // Add light level to global light map
+                        // BUG: Weirdness
+                        map.light_levels[idx] = Some(viewshed.light_levels[i].unwrap_or(0.0) + map.light_levels[idx].unwrap_or(0.0));
                     }
                 }
             }
