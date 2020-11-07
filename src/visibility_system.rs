@@ -87,7 +87,7 @@ impl<'a> System<'a> for VisibilitySystem {
                     for (i, map_pos) in viewshed.visible_tiles.iter().enumerate() {
                         let idx = map.xy_idx(map_pos.x, map_pos.y); // converts algorithm coords to maps
                         // Add light level to global light map
-                        map.light_levels[idx] = Some((viewshed.light_levels[i].unwrap_or(0.0) + map.light_levels[idx].unwrap_or(0.0)).min(1.0));
+                        map.light_levels[idx] = Some(viewshed.light_levels[i].unwrap_or(0.0) + map.light_levels[idx].unwrap_or(0.0));
                     }
                 }
             }
