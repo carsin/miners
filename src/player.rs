@@ -1,11 +1,12 @@
 use specs::{WorldExt, World, prelude::*};
 use bracket_terminal::prelude::*;
-use super::{Direction, Player, Position, Map, util, Viewshed, Game, State};
+use super::{Direction, Player, Position, Map, util, Viewshed, Game, State, CombatStats};
 
 pub fn move_player(dir: Direction, world: &mut World) {
     let mut positions = world.write_storage::<Position>();
     let mut player = world.write_storage::<Player>();
     let mut viewsheds = world.write_storage::<Viewshed>();
+    let mut combat_stats = world.write_storage::<CombatStats>();
     let map = world.fetch::<Map>();
 
     let (delta_x, delta_y) = match dir {
@@ -17,11 +18,24 @@ pub fn move_player(dir: Direction, world: &mut World) {
 
     for (_player, pos, viewshed) in (&mut player, &mut positions, &mut viewsheds).join() {
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
+
+        for potential_target in map.tile_entity[destination_idx].iter() {
+            let target = combat_stats.get(*potential_target);
+            match target {
+                None => {},
+                Some(entity) => {
+                    // attack!
+                    println!("HIYA *attacks*");
+                    return; // don't move if we attacked
+                }
+
+            }
+        }
+
         if !map.tile_blocked[destination_idx] {
             pos.x = util::clamp(pos.x + delta_x, 0, (map.width - 1) as i32);
             pos.y = util::clamp(pos.y + delta_y, 0, (map.height - 1) as i32);
 
-            // TODO: bracket Point -> custom position struct
             let mut player_pos = world.write_resource::<Position>();
             player_pos.x = pos.x;
             player_pos.y = pos.y;

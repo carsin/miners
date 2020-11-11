@@ -145,7 +145,6 @@ impl Map {
                 }
             }
         }
-        self.populate_blocked();
     }
 
     fn place_room(&mut self, room: &Room) {
