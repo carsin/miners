@@ -105,7 +105,7 @@ fn main() -> BError {
     let mut map = Map::new(GAME_WIDTH, GAME_HEIGHT);
 
     let room_count: usize = 20;
-    let min_room_size: usize = 5;
+    let min_room_size: usize = 4;
     let max_room_size: usize = 10;
 
     map.generate_map_rooms_and_corridors(room_count, min_room_size, max_room_size);
@@ -120,7 +120,7 @@ fn main() -> BError {
             bg: RGB::from_f32(0.1, 0.1, 0.1),
         })
         .with(Player {})
-        .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(1.0), range: 8.0, dirty: true })
+        .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(0.8), range: 6.0, dirty: true })
         .build();
 
     // place torches in center of each room

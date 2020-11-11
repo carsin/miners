@@ -115,7 +115,7 @@ impl Map {
                 // loop through other rooms and ensure they dont overlap
                 for other_room in self.rooms.iter() {
                     if current_room.overlaps_with(other_room) {
-                        println!("failed to generate room #{} on attempt {} with params: w:{}, h:{}, x:{}, y:{}", room_num, attempt, room_w, room_h, room_x, room_y);
+                        println!("failed to generate room #{} on attempt {} with params: w:{}, h:{}, x:{}, y:{}", room_num + 1, attempt, room_w, room_h, room_x, room_y);
                         place_room = false;
                     }
                 }
@@ -135,7 +135,7 @@ impl Map {
                             self.place_tunnel_horizontal(prev_x, new_x, prev_y);
                         }
                     }
-                    println!("succeeded in placing room #{} on attempt {} with params: w:{}, h:{}, x:{}, y:{}", room_num, attempt, room_w, room_h, room_x, room_y);
+                    println!("succeeded in placing room #{} on attempt {} with params: w:{}, h:{}, x:{}, y:{}", room_num + 1, attempt, room_w, room_h, room_x, room_y);
                     self.rooms.push(current_room);
                     break 'room_gen;
                 }
