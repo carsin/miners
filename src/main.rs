@@ -104,7 +104,7 @@ fn main() -> BError {
 
     let mut map = Map::new(GAME_WIDTH, GAME_HEIGHT);
 
-    let room_count: usize = 10;
+    let room_count: usize = 20;
     let min_room_size: usize = 5;
     let max_room_size: usize = 10;
 

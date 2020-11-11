@@ -97,27 +97,35 @@ impl Map {
         self.tiles = vec![TileType::Wall; self.width * self.height];
         let mut rng = rand::thread_rng();
 
-        for i in 0..room_count {
-            let mut room_fits = true;
-            while room_fits == true {
+        for room_num in 0..room_count {
+            let mut current_room: Room; // initialize room
+
+            let mut attempt = 0;
+            'room_gen: loop {
+                attempt += 1;
+                // println!("generating new room #{}, attempt {}", room_num, attempt);
+                let mut place_room = true;
+                let room_w = rng.gen_range(min_room_size, max_room_size);
+                let room_h = rng.gen_range(min_room_size, max_room_size);
+                let room_x = rng.gen_range(1, self.width - room_w - 1) as i32;
+                let room_y = rng.gen_range(1, self.height - room_h - 1) as i32;
+                current_room = Room::new(room_x, room_y, room_w, room_h);
+
                 // generate room dimensions
-                let new_room = self.generate_random_room(min_room_size, max_room_size); // initialize room
-                println!("generating room #{}", i);
                 // loop through other rooms and ensure they dont overlap
                 for other_room in self.rooms.iter() {
-                    if new_room.overlaps_with(other_room) {
-                        println!("found room that fits");
-                        room_fits = false; // breaks the generation loop
+                    if current_room.overlaps_with(other_room) {
+                        println!("failed to generate room #{} on attempt {} with params: w:{}, h:{}, x:{}, y:{}", room_num, attempt, room_w, room_h, room_x, room_y);
+                        place_room = false;
                     }
                 }
 
-                // place the room once one fits in the map
-                if room_fits {
-                    self.place_room(&new_room);
+                // if the room didn't intersect with any other rooms, place it and break the generation loop
+                if place_room {
+                    self.place_room(&current_room);
                     if !self.rooms.is_empty() {
-                        let (new_x, new_y) = new_room.center();
+                        let (new_x, new_y) = current_room.center();
                         let (prev_x, prev_y) = self.rooms[self.rooms.len() - 1].center();
-
                         // place tunnel to last room, 50/50 if originating horizontally or vertically
                         if rng.gen::<bool>() {
                             self.place_tunnel_horizontal(prev_x, new_x, prev_y);
@@ -127,21 +135,12 @@ impl Map {
                             self.place_tunnel_horizontal(prev_x, new_x, prev_y);
                         }
                     }
-
-                    self.rooms.push(new_room);
+                    println!("succeeded in placing room #{} on attempt {} with params: w:{}, h:{}, x:{}, y:{}", room_num, attempt, room_w, room_h, room_x, room_y);
+                    self.rooms.push(current_room);
+                    break 'room_gen;
                 }
             }
         }
-    }
-
-    fn generate_random_room(&self, min_room_size: usize, max_room_size: usize) -> Room {
-        let mut rng = rand::thread_rng();
-        let room_w = rng.gen_range(min_room_size, max_room_size);
-        let room_h = rng.gen_range(min_room_size, max_room_size);
-        let room_x = rng.gen_range(1, self.width - room_w - 1) as i32;
-        let room_y = rng.gen_range(1, self.height - room_h - 1) as i32;
-
-        Room::new(room_x, room_y, room_w, room_h)
     }
 
     fn place_room(&mut self, room: &Room) {
