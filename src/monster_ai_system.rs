@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use super::{Viewshed, Position, Monster};
+use super::{Viewshed, Position, Monster, Name};
 
 pub struct MonsterAI {
 
@@ -9,15 +9,16 @@ impl<'a> System<'a> for MonsterAI {
     type SystemData = ( ReadExpect<'a, Position>,
                         WriteStorage<'a, Viewshed>,
                         ReadStorage<'a, Position>,
-                        ReadStorage<'a, Monster> );
+                        ReadStorage<'a, Monster>,
+                        ReadStorage<'a, Name> );
 
 
     fn run(&mut self, data : Self::SystemData) {
-        let (player_pos, mut viewshed, position, monster) = data;
+        let (player_pos, mut viewshed, position, monster, name) = data;
 
-        for (viewshed, _position, _monster) in (&mut viewshed, &position, &monster).join() {
+        for (viewshed, _position, _monster, name) in (&mut viewshed, &position, &monster, &name).join() {
             if viewshed.visible_tiles.contains(&*player_pos) {
-                println!("I SEE U HA");
+                println!("{}", format!("{}: I SEE U", name.name));
             }
             // viewshed.dirty = true;
         }

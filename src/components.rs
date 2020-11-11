@@ -41,3 +41,9 @@ pub struct Viewshed {
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
 pub struct Monster {}
+
+#[derive(Component, Debug)]
+#[storage(VecStorage)]
+pub struct Name {
+    pub name: String,
+}

@@ -2,7 +2,7 @@ use bracket_terminal::prelude::*;
 use specs::prelude::*;
 use rand::Rng;
 
-use components::{Player, Position, Renderable, Viewshed, Monster};
+use components::{Player, Position, Renderable, Viewshed, Monster, Name};
 use map::{Direction, Map};
 use visibility_system::VisibilitySystem;
 use monster_ai_system::MonsterAI;
@@ -17,8 +17,6 @@ mod monster_ai_system;
 const GAME_WIDTH: usize = 60;
 const GAME_HEIGHT: usize = 50;
 const BASE_LIGHT_LEVEL: f32 = 0.0;
-
-const DEBUG_TORCHES: bool = false;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum State {
@@ -105,6 +103,7 @@ fn main() -> BError {
     game.world.register::<Player>();
     game.world.register::<Viewshed>();
     game.world.register::<Monster>();
+    game.world.register::<Name>();
 
     let mut map = Map::new(GAME_WIDTH, GAME_HEIGHT);
 
@@ -125,30 +124,18 @@ fn main() -> BError {
         })
         .with(Player {})
         .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(1.0), range: 5.0, dirty: true })
+        .with(Name { name: String::from("Player") })
         .build();
 
     game.world.insert(Position::new(player_x, player_y));
 
-    // place torches in center of each room
-    if DEBUG_TORCHES {
-        for room in map.rooms.iter().skip(1) {
-            let (x, y) = room.center();
-            game.world.create_entity()
-                .with(Position { x, y })
-                .with(Renderable {
-                    glyph: 'i',
-                    fg: RGB::from_f32(1.0, 0.6, 0.0),
-                    bg: RGB::from_f32(0.1, 0.1, 0.1),
-                })
-                .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(0.6), range: 6.0, dirty: true })
-                .build();
-        }
-    }
-
-    // place zombies
+    let mut zombie_count = 0;
     for room in map.rooms.iter().skip(1) {
-        if rng.gen::<bool>() { // 50% chance to spawn monster
-            let (x, y) = room.center();
+        let (x, y) = room.center();
+        // 50/50 to spawn torch or monster
+        if rng.gen::<bool>() {
+            // spawn monster
+            zombie_count += 1;
             game.world.create_entity()
                 .with(Position { x: x - 1, y: y + 1 })
                 .with(Renderable {
@@ -158,6 +145,17 @@ fn main() -> BError {
                 })
                 .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: None, range: 3.0, dirty: true })
                 .with(Monster {})
+                .with(Name { name: format!("zombie #{}", zombie_count) })
+                .build();
+        } else {
+            game.world.create_entity()
+                .with(Position { x, y })
+                .with(Renderable {
+                    glyph: 'i',
+                    fg: RGB::from_f32(1.0, 0.6, 0.0),
+                    bg: RGB::from_f32(0.1, 0.1, 0.1),
+                })
+                .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(0.6), range: 6.0, dirty: true })
                 .build();
         }
     }
