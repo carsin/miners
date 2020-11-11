@@ -18,7 +18,7 @@ impl<'a> System<'a> for MonsterAI {
 
         for (viewshed, _position, _monster, name) in (&mut viewshed, &position, &monster, &name).join() {
             if viewshed.visible_tiles.contains(&*player_pos) {
-                println!("{}", format!("{}: I SEE U", name.name));
+                println!("{}", format!("{}: DON'T KILL ME PLZ IM USELESS", name.name));
             }
             // viewshed.dirty = true;
         }

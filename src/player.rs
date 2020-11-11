@@ -17,7 +17,7 @@ pub fn move_player(dir: Direction, world: &mut World) {
 
     for (_player, pos, viewshed) in (&mut player, &mut positions, &mut viewsheds).join() {
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
-        if !map.tiles[destination_idx].get_data().blocks_movement {
+        if !map.tile_blocked[destination_idx] {
             pos.x = util::clamp(pos.x + delta_x, 0, (map.width - 1) as i32);
             pos.y = util::clamp(pos.y + delta_y, 0, (map.height - 1) as i32);
 

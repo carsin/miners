@@ -1,7 +1,8 @@
+use bracket_lib::prelude::*;
+use specs::prelude::*;
+
 use std::cmp::{max, min};
 use rand::Rng;
-
-use bracket_lib::prelude::*;
 
 #[derive(Copy, Clone)]
 pub enum Direction {
@@ -43,11 +44,11 @@ impl TileType {
     }
 }
 
-// initialize to RGB as we convert to RGBA when rendering to get light level effect
+
 pub struct TileData {
     pub glyph: char,
-    pub base_fg: RGB,
-    pub base_bg: RGB,
+    pub base_fg: RGB, // initialize to RGB as we convert to RGBA when rendering to get light level effect
+    pub base_bg: RGB, // initialize to RGB as we convert to RGBA when rendering to get light level effect
     pub blocks_movement: bool,
 }
 
@@ -75,6 +76,8 @@ impl Room {
 
 pub struct Map {
     pub tiles: Vec<TileType>,
+    pub tile_entity: Vec<Vec<Entity>>,
+    pub tile_blocked: Vec<bool>,
     pub light_levels: Vec<Option<f32>>,
     pub rooms: Vec<Room>,
     pub width: usize,
@@ -85,6 +88,8 @@ impl Map {
     pub fn new(width: usize, height: usize) -> Self {
         Self {
             tiles: vec![],
+            tile_entity: vec![Vec::new(); width * height],
+            tile_blocked: vec![false; width * height],
             light_levels: vec![None; width * height], // initialize all tiles to none (unrevealed)
             rooms: vec![],
             width,
@@ -140,6 +145,7 @@ impl Map {
                 }
             }
         }
+        self.populate_blocked();
     }
 
     fn place_room(&mut self, room: &Room) {
@@ -172,6 +178,12 @@ impl Map {
         }
     }
 
+    pub fn populate_blocked(&mut self) {
+        for (i, tile) in self.tiles.iter_mut().enumerate() {
+            self.tile_blocked[i] = tile.get_data().blocks_movement;
+        }
+    }
+
     pub fn render(&self, ctx: &mut BTerm) {
         let mut y = 0;
         let mut x = 0;
@@ -196,6 +208,21 @@ impl Map {
         }
     }
 
+    // clears each tile, but doesn't free up memory and instead keeps memory allocated and ready for data. acquiring new memory is slow!
+    pub fn clear_entity_content(&mut self) {
+        for entity in self.tile_entity.iter_mut() {
+            entity.clear();
+        }
+    }
+
+    // checks if an exit can be entered
+    // fn is_exit_valid(&self, x: i32, y: i32) -> bool {
+    //     if x < 1 || x > self.width as i32 - 1 || y < 1 || y > self.height as i32 - 1 { return false }
+    //     let idx = self.xy_idx(x, y);
+    //     self.tiles[idx as usize] != TileType::Wall
+    // }
+
+    // returns index in map array from a coordinate (x, y)
     pub fn xy_idx(&self, x: i32, y: i32) -> usize {
         (y as usize * self.width) + x as usize
     }

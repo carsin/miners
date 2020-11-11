@@ -2,10 +2,11 @@ use bracket_terminal::prelude::*;
 use specs::prelude::*;
 use rand::Rng;
 
-use components::{Player, Position, Renderable, Viewshed, Monster, Name};
+use components::{Player, Position, Renderable, Viewshed, Monster, Name, BlocksTile, CombatStats};
 use map::{Direction, Map};
 use visibility_system::VisibilitySystem;
 use monster_ai_system::MonsterAI;
+use map_indexing_system::MapIndexingSystem;
 
 mod components;
 mod map;
@@ -13,6 +14,7 @@ mod player;
 mod util;
 mod visibility_system;
 mod monster_ai_system;
+mod map_indexing_system;
 
 const GAME_WIDTH: usize = 60;
 const GAME_HEIGHT: usize = 50;
@@ -35,6 +37,8 @@ impl Game {
         visibility.run_now(&self.world);
         let mut monsters = MonsterAI{};
         monsters.run_now(&self.world);
+        let mut mapindex = MapIndexingSystem{};
+        mapindex.run_now(&self.world);
 
         // Apply changes to World
         self.world.maintain();
@@ -104,6 +108,8 @@ fn main() -> BError {
     game.world.register::<Viewshed>();
     game.world.register::<Monster>();
     game.world.register::<Name>();
+    game.world.register::<CombatStats>();
+    game.world.register::<BlocksTile>();
 
     let mut map = Map::new(GAME_WIDTH, GAME_HEIGHT);
 
@@ -125,6 +131,7 @@ fn main() -> BError {
         .with(Player {})
         .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(1.0), range: 5.0, dirty: true })
         .with(Name { name: String::from("Player") })
+        .with(CombatStats { max_hp: 30, hp: 30, armor: 0, damage: 3 })
         .build();
 
     game.world.insert(Position::new(player_x, player_y));
@@ -146,6 +153,8 @@ fn main() -> BError {
                 .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: None, range: 3.0, dirty: true })
                 .with(Monster {})
                 .with(Name { name: format!("zombie #{}", zombie_count) })
+                .with(BlocksTile {})
+                .with(CombatStats { max_hp: 12, hp: 12, armor: 0, damage: 1 })
                 .build();
         } else {
             game.world.create_entity()

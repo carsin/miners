@@ -47,3 +47,16 @@ pub struct Monster {}
 pub struct Name {
     pub name: String,
 }
+
+#[derive(Component, Debug)]
+#[storage(VecStorage)]
+pub struct BlocksTile {}
+
+#[derive(Component, Debug)]
+#[storage(VecStorage)]
+pub struct CombatStats {
+    pub max_hp: i32,
+    pub hp: i32,
+    pub armor: i32,
+    pub damage: i32,
+}
