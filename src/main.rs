@@ -104,11 +104,11 @@ fn main() -> BError {
 
     let mut map = Map::new(GAME_WIDTH, GAME_HEIGHT);
 
-    let max_rooms: usize = 50;
+    let room_count: usize = 10;
     let min_room_size: usize = 5;
     let max_room_size: usize = 10;
 
-    map.generate_map_rooms_and_corridors(max_rooms, min_room_size, max_room_size);
+    map.generate_map_rooms_and_corridors(room_count, min_room_size, max_room_size);
 
     // Create player
     let (player_x, player_y) = map.rooms[0].center();
@@ -124,33 +124,19 @@ fn main() -> BError {
         .build();
 
     // place torches in center of each room
-    for room in map.rooms.iter().skip(1) {
-        let (x, y) = room.center();
-        game.world.create_entity()
-            .with(Position { x, y })
-            .with(Renderable {
-                glyph: 'i',
-                fg: RGB::from_f32(1.0, 0.6, 0.0),
-                bg: RGB::from_f32(0.1, 0.1, 0.1),
-            })
-            .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(0.5), range: 5.0, dirty: true })
-            .with(Monster {})
-            .build();
-    }
-
-    for room in map.rooms.iter().skip(1) {
-        let (x, y) = room.center();
-        game.world.create_entity()
-            .with(Position { x: x - 2, y: y + 2 })
-            .with(Renderable {
-                glyph: 'i',
-                fg: RGB::from_f32(1.0, 0.6, 0.0),
-                bg: RGB::from_f32(0.1, 0.1, 0.1),
-            })
-            .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(0.5), range: 5.0, dirty: true })
-            .with(Monster {})
-            .build();
-    }
+    // for room in map.rooms.iter().skip(1) {
+    //     let (x, y) = room.center();
+    //     game.world.create_entity()
+    //         .with(Position { x, y })
+    //         .with(Renderable {
+    //             glyph: 'i',
+    //             fg: RGB::from_f32(1.0, 0.6, 0.0),
+    //             bg: RGB::from_f32(0.1, 0.1, 0.1),
+    //         })
+    //         .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(0.8), range: 5.0, dirty: true })
+    //         .with(Monster {})
+    //         .build();
+    // }
 
     game.world.insert(map);
 
