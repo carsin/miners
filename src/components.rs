@@ -8,6 +8,12 @@ pub struct Position {
     pub y: i32,
 }
 
+impl Position {
+    pub fn new(x: i32, y: i32) -> Self {
+        Self {x, y}
+    }
+}
+
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
 pub struct Renderable {

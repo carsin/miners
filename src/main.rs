@@ -1,5 +1,6 @@
 use bracket_terminal::prelude::*;
 use specs::prelude::*;
+use rand::Rng;
 
 use components::{Player, Position, Renderable, Viewshed, Monster};
 use map::{Direction, Map};
@@ -16,6 +17,8 @@ mod monster_ai_system;
 const GAME_WIDTH: usize = 60;
 const GAME_HEIGHT: usize = 50;
 const BASE_LIGHT_LEVEL: f32 = 0.0;
+
+const DEBUG_TORCHES: bool = false;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum State {
@@ -82,6 +85,7 @@ bracket_terminal::embedded_resource!(TILE_FONT, "../resources/Zilk_16x16.png");
 
 fn main() -> BError {
     bracket_terminal::link_resource!(TILE_FONT, "resources/Zilk_16x16.png");
+    let mut rng = rand::thread_rng();
     let context = BTermBuilder::new()
         .with_tile_dimensions(16, 16)
         .with_dimensions(GAME_WIDTH, GAME_HEIGHT)
@@ -104,7 +108,7 @@ fn main() -> BError {
 
     let mut map = Map::new(GAME_WIDTH, GAME_HEIGHT);
 
-    let room_count: usize = 20;
+    let room_count: usize = 10;
     let min_room_size: usize = 4;
     let max_room_size: usize = 10;
 
@@ -123,19 +127,39 @@ fn main() -> BError {
         .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(1.0), range: 5.0, dirty: true })
         .build();
 
+    game.world.insert(Position::new(player_x, player_y));
+
     // place torches in center of each room
+    if DEBUG_TORCHES {
+        for room in map.rooms.iter().skip(1) {
+            let (x, y) = room.center();
+            game.world.create_entity()
+                .with(Position { x, y })
+                .with(Renderable {
+                    glyph: 'i',
+                    fg: RGB::from_f32(1.0, 0.6, 0.0),
+                    bg: RGB::from_f32(0.1, 0.1, 0.1),
+                })
+                .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(0.6), range: 6.0, dirty: true })
+                .build();
+        }
+    }
+
+    // place zombies
     for room in map.rooms.iter().skip(1) {
-        let (x, y) = room.center();
-        game.world.create_entity()
-            .with(Position { x, y })
-            .with(Renderable {
-                glyph: 'i',
-                fg: RGB::from_f32(1.0, 0.6, 0.0),
-                bg: RGB::from_f32(0.1, 0.1, 0.1),
-            })
-            .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(0.5), range: 6.0, dirty: true })
-            .with(Monster {})
-            .build();
+        if rng.gen::<bool>() { // 50% chance to spawn monster
+            let (x, y) = room.center();
+            game.world.create_entity()
+                .with(Position { x: x - 1, y: y + 1 })
+                .with(Renderable {
+                    glyph: 'z',
+                    fg: RGB::from_f32(0.1, 0.5, 0.1),
+                    bg: RGB::from_f32(0.1, 0.1, 0.1),
+                })
+                .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: None, range: 3.0, dirty: true })
+                .with(Monster {})
+                .build();
+        }
     }
 
     game.world.insert(map);

@@ -20,11 +20,13 @@ pub fn move_player(dir: Direction, world: &mut World) {
         if !map.tiles[destination_idx].get_data().blocks_movement {
             pos.x = util::clamp(pos.x + delta_x, 0, (map.width - 1) as i32);
             pos.y = util::clamp(pos.y + delta_y, 0, (map.height - 1) as i32);
+
+            // TODO: bracket Point -> custom position struct
+            let mut player_pos = world.write_resource::<Position>();
+            player_pos.x = pos.x;
+            player_pos.y = pos.y;
+            viewshed.dirty = true;
         }
-        // updates viewshed even if move doesn't actually happen
-        // this fixes a weird bug that breaks the viewshed if the player attempts
-        // to walk into a wall. is that bug in here or somewhere else?
-        viewshed.dirty = true;
     }
 }
 
