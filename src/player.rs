@@ -1,6 +1,6 @@
 use specs::{WorldExt, World, prelude::*};
 use bracket_terminal::prelude::*;
-use super::{Direction, Player, Position, Map, util, Viewshed, Game, State, CombatStats, MeleeAttacking};
+use super::{Direction, Player, Position, Map, util, Viewshed, Game, RunState, CombatStats, MeleeAttacking};
 
 pub fn move_player(dir: Direction, world: &mut World) {
     let mut positions = world.write_storage::<Position>();
@@ -47,16 +47,16 @@ pub fn move_player(dir: Direction, world: &mut World) {
     }
 }
 
-pub fn input(game: &mut Game, ctx: &mut BTerm) -> State {
+pub fn input(game: &mut Game, ctx: &mut BTerm) -> RunState {
     match ctx.key {
-        None => { return State::Paused }
+        None => { return RunState::AwaitingInput }
         Some(key) => match key {
             VirtualKeyCode::K | VirtualKeyCode::W => move_player(Direction::North, &mut game.world),
             VirtualKeyCode::J | VirtualKeyCode::S => move_player(Direction::South, &mut game.world),
             VirtualKeyCode::L | VirtualKeyCode::D => move_player(Direction::East, &mut game.world),
             VirtualKeyCode::H | VirtualKeyCode::A => move_player(Direction::West, &mut game.world),
-            _ => { return State::Paused }
+            _ => { return RunState::AwaitingInput }
         }
     }
-    State::Running
+    RunState::PlayerTurn
 }

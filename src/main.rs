@@ -25,14 +25,15 @@ const GAME_HEIGHT: usize = 50;
 const BASE_LIGHT_LEVEL: f32 = 0.0;
 
 #[derive(PartialEq, Copy, Clone)]
-pub enum State {
-    Paused,
-    Running
+pub enum RunState {
+    PreRun,
+    AwaitingInput,
+    PlayerTurn,
+    MonsterTurn,
 }
 
 pub struct Game {
     pub world: World,
-    pub state: State
 }
 
 impl Game {
@@ -57,13 +58,40 @@ impl GameState for Game {
     fn tick(&mut self, ctx: &mut BTerm) {
         // Reset console for next render
         ctx.cls();
+        let mut new_run_state;
 
-        // Turn based updating
-        if self.state == State::Running {
-            self.run_systems();
-            self.state = State::Paused;
-        } else {
-            self.state = player::input(self, ctx);
+        // get current run state
+        {
+            let run_state = self.world.fetch::<RunState>();
+            new_run_state = *run_state;
+        }
+
+        // run according to run state
+        match new_run_state {
+            RunState::PreRun => {
+                self.run_systems();
+                new_run_state = RunState::AwaitingInput;
+            },
+
+            RunState::AwaitingInput => {
+                new_run_state = player::input(self, ctx);
+            },
+
+            RunState::PlayerTurn => {
+                self.run_systems();
+                new_run_state = RunState::MonsterTurn;
+            },
+
+            RunState::MonsterTurn => {
+                self.run_systems();
+                new_run_state = RunState::AwaitingInput;
+            },
+        }
+
+        // update run state
+        {
+            let mut run_writer = self.world.write_resource::<RunState>();
+            *run_writer = new_run_state;
         }
 
         // Remove dead entites
@@ -110,7 +138,6 @@ fn main() -> BError {
 
     let mut game: Game = Game {
         world: World::new(),
-        state: State::Running,
     };
 
     game.world.register::<Position>();
@@ -134,7 +161,7 @@ fn main() -> BError {
 
     // Create player
     let (player_x, player_y) = map.rooms[0].center();
-    game.world.create_entity()
+    let player_entity = game.world.create_entity()
         .with(Position { x: player_x, y: player_y })
         .with(Renderable {
             glyph: '☺',
@@ -146,8 +173,6 @@ fn main() -> BError {
         .with(Name { name: String::from("Player") })
         .with(CombatStats { max_hp: 30, hp: 30, armor: 0, damage: 3 })
         .build();
-
-    game.world.insert(Position::new(player_x, player_y));
 
     let mut zombie_count = 0;
     for room in map.rooms.iter().skip(1) {
@@ -183,6 +208,9 @@ fn main() -> BError {
     }
 
     game.world.insert(map);
+    game.world.insert(player_entity);
+    game.world.insert(Position::new(player_x, player_y));
+    game.world.insert(RunState::PreRun);
 
     // Call into bracket_terminal to run the main loop. This handles rendering, and calls back into State's tick function every cycle. The box is needed to work around lifetime handling.
     main_loop(context, game)
