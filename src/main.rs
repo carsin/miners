@@ -2,11 +2,13 @@ use bracket_terminal::prelude::*;
 use specs::prelude::*;
 use rand::Rng;
 
-use components::{Player, Position, Renderable, Viewshed, Monster, Name, BlocksTile, CombatStats};
+use components::*;
 use map::{Direction, Map};
 use visibility_system::VisibilitySystem;
 use monster_ai_system::MonsterAI;
 use map_indexing_system::MapIndexingSystem;
+use melee_combat_system::MeleeCombatSystem;
+use damage_system::DamageSystem;
 
 mod components;
 mod map;
@@ -15,6 +17,8 @@ mod util;
 mod visibility_system;
 mod monster_ai_system;
 mod map_indexing_system;
+mod melee_combat_system;
+mod damage_system;
 
 const GAME_WIDTH: usize = 60;
 const GAME_HEIGHT: usize = 50;
@@ -39,6 +43,10 @@ impl Game {
         monsters.run_now(&self.world);
         let mut mapindex = MapIndexingSystem{};
         mapindex.run_now(&self.world);
+        let mut melee_combat = MeleeCombatSystem{};
+        melee_combat.run_now(&self.world);
+        let mut damage = DamageSystem{};
+        damage.run_now(&self.world);
 
         // Apply changes to World
         self.world.maintain();
@@ -57,6 +65,9 @@ impl GameState for Game {
         } else {
             self.state = player::input(self, ctx);
         }
+
+        // Remove dead entites
+        damage_system::remove_dead(&mut self.world);
 
         // Render map
         let map = self.world.fetch::<Map>();
@@ -110,6 +121,8 @@ fn main() -> BError {
     game.world.register::<Name>();
     game.world.register::<CombatStats>();
     game.world.register::<BlocksTile>();
+    game.world.register::<MeleeAttacking>();
+    game.world.register::<SufferDamage>();
 
     let mut map = Map::new(GAME_WIDTH, GAME_HEIGHT);
 

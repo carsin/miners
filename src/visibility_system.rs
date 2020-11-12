@@ -52,10 +52,11 @@ impl QuadrantRow {
 pub struct VisibilitySystem {}
 
 impl<'a> System<'a> for VisibilitySystem {
-    type SystemData = (WriteExpect<'a, Map>,
-                       Entities<'a>,
-                       WriteStorage<'a, Viewshed>,
-                       WriteStorage<'a, Position>);
+    type SystemData = ( WriteExpect<'a, Map>,
+                        Entities<'a>,
+                        WriteStorage<'a, Viewshed>,
+                        WriteStorage<'a, Position>,
+                       );
 
     // runs for entities with viewshed & position components
     fn run(&mut self, data: Self::SystemData) {

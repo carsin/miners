@@ -1,19 +1,18 @@
 use specs::prelude::*;
 use super::{Viewshed, Position, Monster, Name};
 
-pub struct MonsterAI {
-
-}
+pub struct MonsterAI {}
 
 impl<'a> System<'a> for MonsterAI {
     type SystemData = ( ReadExpect<'a, Position>,
                         WriteStorage<'a, Viewshed>,
                         ReadStorage<'a, Position>,
                         ReadStorage<'a, Monster>,
-                        ReadStorage<'a, Name> );
+                        ReadStorage<'a, Name>,
+                      );
 
 
-    fn run(&mut self, data : Self::SystemData) {
+    fn run(&mut self, data: Self::SystemData) {
         let (player_pos, mut viewshed, position, monster, name) = data;
 
         for (viewshed, _position, _monster, name) in (&mut viewshed, &position, &monster, &name).join() {

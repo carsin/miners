@@ -1,5 +1,6 @@
+use specs::error::NoError;
 use bracket_terminal::prelude::RGB;
-use specs::{Component, VecStorage};
+use specs::{prelude::*, Component, VecStorage, ConvertSaveload};
 
 #[derive(PartialEq, Copy, Clone, Component, Debug)]
 #[storage(VecStorage)]
@@ -59,4 +60,26 @@ pub struct CombatStats {
     pub hp: i32,
     pub armor: i32,
     pub damage: i32,
+}
+
+#[derive(Component, Debug, Clone)]
+#[storage(VecStorage)]
+pub struct MeleeAttacking {
+    pub target: Entity,
+}
+
+#[derive(Component, Debug)]
+pub struct SufferDamage {
+    pub amount : Vec<i32>
+}
+
+impl SufferDamage {
+    pub fn new_damage(store: &mut WriteStorage<SufferDamage>, victim: Entity, amount: i32) {
+        if let Some(recipient) = store.get_mut(victim) {
+            recipient.amount.push(amount);
+        } else {
+            let dmg = SufferDamage { amount: vec![amount] };
+            store.insert(victim, dmg).expect("Unable to insert damage");
+        }
+    }
 }

@@ -7,10 +7,11 @@ impl<'a> System<'a> for MapIndexingSystem {
     type SystemData = ( WriteExpect<'a, Map>,
                         ReadStorage<'a, Position>,
                         ReadStorage<'a, BlocksTile>,
-                        Entities<'a>,);
+                        Entities<'a>,
+                      );
 
 
-    fn run(&mut self, data : Self::SystemData) {
+    fn run(&mut self, data: Self::SystemData) {
         let (mut map, position, blockers, entities) = data;
 
         map.populate_blocked();
