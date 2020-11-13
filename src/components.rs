@@ -1,6 +1,5 @@
-use specs::error::NoError;
 use bracket_terminal::prelude::RGB;
-use specs::{prelude::*, Component, VecStorage, ConvertSaveload};
+use specs::{prelude::*, Component, VecStorage};
 
 #[derive(PartialEq, Copy, Clone, Component, Debug)]
 #[storage(VecStorage)]

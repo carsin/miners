@@ -19,8 +19,9 @@ mod monster_ai_system;
 mod map_indexing_system;
 mod melee_combat_system;
 mod damage_system;
+mod gui;
 
-const GAME_WIDTH: usize = 60;
+const GAME_WIDTH: usize = 80;
 const GAME_HEIGHT: usize = 50;
 const BASE_LIGHT_LEVEL: f32 = 0.0;
 
@@ -118,6 +119,7 @@ impl GameState for Game {
             }
         }
         ctx.print_color(0, 0, RGB::named(WHITE), RGB::named(BLACK), &format!("{} fps", ctx.fps as u32)); // Render FPS
+        gui::draw_ui(&self.world, ctx);
     }
 }
 
