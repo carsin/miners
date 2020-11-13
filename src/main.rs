@@ -198,7 +198,7 @@ fn main() -> BError {
                 })
                 .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: None, range: 1.0, dirty: true })
                 .with(Monster {})
-                .with(Name { name: format!("zombie #{}", zombie_count) })
+                .with(Name { name: format!("Zombie #{}", zombie_count) })
                 .with(BlocksTile {})
                 .with(CombatStats { max_hp: 10, hp: 10, armor: 0, damage: 1 })
                 .build();
@@ -210,6 +210,7 @@ fn main() -> BError {
                     fg: RGB::from_f32(1.0, 0.6, 0.0),
                     bg: RGB::from_f32(0.1, 0.1, 0.1),
                 })
+                .with(Name { name: String::from("Torch")})
                 .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(0.6), range: 6.0, dirty: true })
                 .build();
         }
