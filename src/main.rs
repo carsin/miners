@@ -9,6 +9,7 @@ use monster_ai_system::MonsterAI;
 use map_indexing_system::MapIndexingSystem;
 use melee_combat_system::MeleeCombatSystem;
 use damage_system::DamageSystem;
+use gamelog::GameLog;
 
 mod components;
 mod map;
@@ -20,9 +21,14 @@ mod map_indexing_system;
 mod melee_combat_system;
 mod damage_system;
 mod gui;
+mod gamelog;
 
 const GAME_WIDTH: usize = 80;
 const GAME_HEIGHT: usize = 50;
+
+const MAP_WIDTH: usize = GAME_WIDTH;
+const MAP_HEIGHT: usize = GAME_HEIGHT - 7;
+
 const BASE_LIGHT_LEVEL: f32 = 0.0;
 
 #[derive(PartialEq, Copy, Clone)]
@@ -153,7 +159,7 @@ fn main() -> BError {
     game.world.register::<MeleeAttacking>();
     game.world.register::<SufferDamage>();
 
-    let mut map = Map::new(GAME_WIDTH, GAME_HEIGHT);
+    let mut map = Map::new(MAP_WIDTH, MAP_HEIGHT);
 
     let room_count: usize = 10;
     let min_room_size: usize = 4;
@@ -173,7 +179,7 @@ fn main() -> BError {
         .with(Player {})
         .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: Some(1.0), range: 5.0, dirty: true })
         .with(Name { name: String::from("Player") })
-        .with(CombatStats { max_hp: 30, hp: 30, armor: 0, damage: 3 })
+        .with(CombatStats { max_hp: 30, hp: 30, armor: 0, damage: 5 })
         .build();
 
     let mut zombie_count = 0;
@@ -190,11 +196,11 @@ fn main() -> BError {
                     fg: RGB::from_f32(0.1, 0.5, 0.1),
                     bg: RGB::from_f32(0.1, 0.1, 0.1),
                 })
-                .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: None, range: 3.0, dirty: true })
+                .with(Viewshed { visible_tiles: vec![], light_levels: vec![], emitter: None, range: 1.0, dirty: true })
                 .with(Monster {})
                 .with(Name { name: format!("zombie #{}", zombie_count) })
                 .with(BlocksTile {})
-                .with(CombatStats { max_hp: 12, hp: 12, armor: 0, damage: 1 })
+                .with(CombatStats { max_hp: 10, hp: 10, armor: 0, damage: 1 })
                 .build();
         } else {
             game.world.create_entity()
@@ -209,6 +215,7 @@ fn main() -> BError {
         }
     }
 
+    game.world.insert(GameLog { entries: vec![String::from("Welcome to mine.rs")] });
     game.world.insert(map);
     game.world.insert(player_entity);
     game.world.insert(Position::new(player_x, player_y));

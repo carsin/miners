@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use super::{CombatStats, SufferDamage};
+use super::{CombatStats, SufferDamage, Player, Name, GameLog};
 
 pub struct DamageSystem {}
 
@@ -25,11 +25,29 @@ pub fn remove_dead(world: &mut World) {
     // new scope to avoid borrow
     {
         let combat_stats = world.read_storage::<CombatStats>();
+        let players = world.read_storage::<Player>();
+        let names = world.read_storage::<Name>();
         let entities = world.entities();
+        let mut log = world.write_resource::<GameLog>();
         // loop through entities with hp
         for (entity, stats) in (&entities, &combat_stats).join() {
             if stats.hp < 1 {
-                dead.push(entity);
+                let player = players.get(entity);
+                match player {
+                    None => {
+                        let victim_name = names.get(entity);
+                        if let Some(victim_name) = victim_name {
+                            log.entries.push(format!("{} died", &victim_name.name));
+                        }
+                        dead.push(entity);
+                    },
+
+                    Some(_) => {
+                        let death_text = String::from("You have perished.");
+                        println!("{}", death_text);
+                        log.entries.push(death_text);
+                    }
+                }
             }
         }
     }
