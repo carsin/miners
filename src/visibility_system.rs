@@ -1,5 +1,4 @@
 use specs::prelude::*;
-
 use super::{Viewshed, Position, Map, Direction, util, map::TileType, BASE_LIGHT_LEVEL};
 
 struct Quadrant {

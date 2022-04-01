@@ -109,10 +109,10 @@ impl Map {
                 attempt += 1;
                 // println!("generating new room #{}, attempt {}", room_num, attempt);
                 let mut place_room = true;
-                let room_w = rng.gen_range(min_room_size, max_room_size);
-                let room_h = rng.gen_range(min_room_size, max_room_size);
-                let room_x = rng.gen_range(1, self.width - room_w - 1) as i32;
-                let room_y = rng.gen_range(1, self.height - room_h - 1) as i32;
+                let room_w = rng.gen_range(min_room_size..max_room_size);
+                let room_h = rng.gen_range(min_room_size..max_room_size);
+                let room_x = rng.gen_range(1..self.width - room_w - 1) as i32;
+                let room_y = rng.gen_range(1..self.height - room_h - 1) as i32;
                 current_room = Room::new(room_x, room_y, room_w, room_h);
 
                 // generate room dimensions
