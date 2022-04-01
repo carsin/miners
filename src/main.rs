@@ -139,7 +139,7 @@ fn main() -> BError {
         .with_tile_dimensions(16, 16)
         .with_dimensions(GAME_WIDTH, GAME_HEIGHT)
         .with_font("Zilk_16x16.png", 16, 16)
-        .with_title("miners")
+        .with_title("miners !dwmf")
         .with_simple_console(GAME_WIDTH, GAME_HEIGHT, "Zilk_16x16.png")
         // .with_automatic_console_resize(true)
         .build()?;
